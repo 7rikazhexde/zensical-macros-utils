@@ -68,8 +68,24 @@ def _get_docs_dir() -> Path:
 
 
 def _load_config() -> Dict[str, Any]:
-    """Load full config from mkdocs.yml or zensical config in CWD if available."""
+    """Load full config from zensical.toml or mkdocs.yml in CWD if available."""
     cwd = Path(os.getcwd())
+
+    # Try zensical.toml first (TOML format, [project] section)
+    toml_path = cwd / "zensical.toml"
+    if toml_path.exists():
+        try:
+            try:
+                import tomllib
+            except ImportError:
+                import tomli as tomllib  # type: ignore[no-redef]
+            with open(toml_path, "rb") as f:
+                data = tomllib.load(f)
+            return dict(data.get("project", data))
+        except Exception:
+            pass
+
+    # Fall back to mkdocs.yml / mkdocs.yaml (YAML format)
     for config_name in ("mkdocs.yml", "mkdocs.yaml"):
         config_path = cwd / config_name
         if config_path.exists():

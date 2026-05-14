@@ -1,0 +1,105 @@
+[project]
+site_name = "MkDocs Macros Utils Documentation"
+site_description = "Documentation and examples for mkdocs-macros-utils plugin"
+site_url = "https://7rikazhexde.github.io/mkdocs-macros-utils/"
+site_author = "7rikazhexde"
+repo_name = "7rikazhexde/mkdocs-macros-utils"
+repo_url = "https://github.com/7rikazhexde/mkdocs-macros-utils/"
+copyright = "&copy; 2025 7rikazhexde"
+
+extra_css = [
+    "stylesheets/macros-utils/link-card.css",
+    "stylesheets/macros-utils/gist-cb.css",
+    "stylesheets/macros-utils/x-twitter-link-card.css",
+]
+
+extra_javascript = [
+    "javascripts/macros-utils/x-twitter-widget.js",
+]
+
+nav = [
+    {Home = "index.md"},
+    {Examples = ["examples/index.md", {"Link Card" = "examples/link-card-macro.md"}, {"Gist Code Block" = "examples/gist-codeblock-macro.md"}, {"X/Twitter Card" = "examples/x-twitter-card-macro.md"}]},
+]
+
+# ----------------------------------------------------------------------------
+# Theme
+# ----------------------------------------------------------------------------
+[project.theme]
+variant = "classic"
+custom_dir = "overrides"
+features = [
+    "content.code.copy",
+    "content.code.select",
+    "content.code.annotate",
+    "navigation.indexes",
+    "navigation.sections",
+    "navigation.top",
+    "navigation.footer",
+]
+
+[[project.theme.palette]]
+media = "(prefers-color-scheme: light)"
+scheme = "default"
+primary = "teal"
+accent = "teal"
+toggle.icon = "material/weather-sunny"
+toggle.name = "Switch to dark mode"
+
+[[project.theme.palette]]
+media = "(prefers-color-scheme: dark)"
+scheme = "slate"
+primary = "teal"
+accent = "teal"
+toggle.icon = "material/weather-night"
+toggle.name = "Switch to light mode"
+
+# ----------------------------------------------------------------------------
+# Plugins — macros is added here so it appends to default markdown extensions
+# without overriding them
+# ----------------------------------------------------------------------------
+[project.plugins.macros]
+modules = ["mkdocs_macros_utils"]
+
+# ----------------------------------------------------------------------------
+# Extra
+# ----------------------------------------------------------------------------
+[[project.extra.social]]
+icon = "fontawesome/brands/github-alt"
+link = "https://github.com/7rikazhexde"
+
+[[project.extra.social]]
+icon = "fontawesome/brands/twitter"
+link = "https://twitter.com/tw_7rikazhexde"
+
+[[project.extra.social]]
+icon = "fontawesome/solid/blog"
+link = "https://7rikazhexde-pkm-obsidian-mkdocs.netlify.app"
+
+[project.extra.consent]
+title = "Cookie consent"
+description = "This site uses Google Analytics and cookies to collect visitor data. The collected data helps me understand site usage and improve the documentation. By clicking \"Accept\", you consent to the use of cookies for these purposes."
+
+[project.extra.analytics]
+provider = "google"
+property = "G-MFRRFBKM3H"
+
+[project.extra.analytics.feedback]
+title = "Was this page helpful?"
+
+[[project.extra.analytics.feedback.ratings]]
+icon = "material/thumb-up-outline"
+name = "This page was helpful"
+data = 1
+note = "Thank you for your feedback!"
+
+[[project.extra.analytics.feedback.ratings]]
+icon = "material/thumb-down-outline"
+name = "This page could be improved"
+data = 0
+note = "Thank you for your feedback!<br>\nPlease feel free to reach out via Twitter for any suggestions or improvements."
+
+[project.extra.debug]
+link_card = false
+gist_codeblock = false
+x_twitter_card = false

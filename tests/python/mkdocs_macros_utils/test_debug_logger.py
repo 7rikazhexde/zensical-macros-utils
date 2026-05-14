@@ -95,4 +95,4 @@ def test_logger_name_format() -> None:
     """Test the format of the logger name"""
     module_name = "test_module"
     logger = DebugLogger(module_name)
-    assert logger.logger.name == f"mkdocs.plugins.macros-utils.{module_name}"
+    assert logger.logger.name == f"zensical.macros-utils.{module_name}"

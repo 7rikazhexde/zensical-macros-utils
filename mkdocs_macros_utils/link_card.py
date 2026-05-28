@@ -158,11 +158,8 @@ def create_link_card(
 
     # Get the base URL of the site
     base_url = ""
-    if env:
-        if hasattr(env, "conf"):
-            base_url = env.conf.get("site_url", "")
-        elif hasattr(env, "variables"):
-            base_url = str(env.variables.get("_site_url", ""))
+    if env and hasattr(env, "variables"):
+        base_url = str(env.variables.get("_site_url", ""))
 
     # Determine image path
     if external and not image_path:

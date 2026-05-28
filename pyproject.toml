@@ -41,11 +41,11 @@ dev = [
 
 # Task runner configuration
 [tool.taskipy.tasks]
-testcoverageverbose = "pytest -s -vv --cov=mkdocs_macros_utils --cov-branch --cov-report term-missing --cov-report html"
+testcoverageverbose = "pytest -s -vv --cov=. --cov-branch --cov-report term-missing --cov-report html"
 testhtmlreport = "pytest --html=htmlcov/report_page.html"
 testcixml = "python scripts/run_tests.py --report xml"
 testciterm = "python scripts/run_tests.py --report term"
-testcoverage = "pytest --cov=mkdocs_macros_utils --cov-branch --cov-report=term-missing --cov-report=html"
+testcoverage = "pytest --cov=. --cov-branch --cov-report=term-missing --cov-report=html"
 
 # Type checking configuration
 [tool.mypy]
@@ -64,6 +64,10 @@ warn_redundant_casts = true
 [[tool.mypy.overrides]]
 module = ["zensical.*","jinja2.*","ruamel.*","pygments.*","yaml.*"]
 ignore_missing_imports = true
+
+# Coverage configuration
+[tool.coverage.run]
+omit = ["tests/*", "scripts/*", "docs/*"]
 
 # Test configuration
 [tool.pytest.ini_options]

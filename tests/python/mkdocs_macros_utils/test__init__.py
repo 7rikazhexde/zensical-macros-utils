@@ -226,3 +226,10 @@ def test_load_extra_config_empty(monkeypatch: MonkeyPatch, tmp_path: Path) -> No
     """Test _load_extra_config returns empty dict when no extra section exists."""
     monkeypatch.chdir(tmp_path)
     assert _load_extra_config() == {}
+
+
+def test_load_config_invalid_yaml(monkeypatch: MonkeyPatch, tmp_path: Path) -> None:
+    """Test _load_config returns {} when YAML content is malformed."""
+    (tmp_path / "mkdocs.yml").write_text("key: [unclosed")
+    monkeypatch.chdir(tmp_path)
+    assert _load_config() == {}

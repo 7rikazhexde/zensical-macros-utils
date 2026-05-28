@@ -119,7 +119,13 @@ jobs:
       - name: Generate changelog
         id: changelog
         run: |
-          changelog=$(git log --pretty=format:"- %s" v${{ steps.current_version.outputs.python_version }}..v${{ steps.update_version.outputs.new_version }})
+          prev_tag="v${{ steps.current_version.outputs.python_version }}"
+          new_tag="v${{ steps.update_version.outputs.new_version }}"
+          if git rev-parse "$prev_tag" >/dev/null 2>&1; then
+            changelog=$(git log --pretty=format:"- %s" "${prev_tag}..${new_tag}")
+          else
+            changelog=$(git log --pretty=format:"- %s" "${new_tag}")
+          fi
           {
             echo "changelog<<EOF"
             echo "$changelog"

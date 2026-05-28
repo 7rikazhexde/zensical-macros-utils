@@ -30,7 +30,7 @@ def get_test_command(report_type: str) -> str:
     else:
         raise ValueError(f"Unsupported report type: {report_type}")
 
-    full_command = f"{base_command} {cov_report} --cov=mkdocs_macros_utils tests/python"
+    full_command = f"{base_command} {cov_report} --cov=. tests/python"
 
     if platform.system() == "Windows":
         print(f"system/OS is {platform.system()}")

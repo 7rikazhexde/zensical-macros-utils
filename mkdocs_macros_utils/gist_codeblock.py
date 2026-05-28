@@ -1,11 +1,11 @@
 """
-MkDocs Macros Plugin for fetching and displaying Gist code blocks.
+Zensical macros module for fetching and displaying Gist code blocks.
 """
 
 from typing import Optional, Tuple, Dict
 import re
 import requests
-from mkdocs_macros.plugin import MacrosPlugin
+from zensical.extensions.macros import MacroEnv
 from pathlib import Path
 from pygments.lexers import guess_lexer, TextLexer
 
@@ -186,9 +186,9 @@ class GistProcessor:
             return None, f"Error fetching Gist content: {str(e)}"
 
 
-def define_env(env: MacrosPlugin) -> None:
+def define_env(env: MacroEnv) -> None:
     """
-    Define gist_codeblock macro in MkDocs macro environment
+    Define gist_codeblock macro in zensical macro environment
     """
     # Create debug logger
     logger = DebugLogger.create_logger("gist_codeblock", env)

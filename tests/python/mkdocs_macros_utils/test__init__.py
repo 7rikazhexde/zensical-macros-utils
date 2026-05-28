@@ -1,26 +1,27 @@
 """
 Tests for MkDocs Macros Utils initialization module.
 This module tests the functionality of the package's __init__.py,
-including static file copying, file processing, and environment setup.
+including static file copying and environment setup.
 """
 
 import os
+import sys
 import logging
 from pathlib import Path
 import pytest
 from _pytest.logging import LogCaptureFixture
 from pytest import MonkeyPatch
-from mkdocs.config import Config
-from mkdocs.structure.files import File, Files
 from mkdocs_macros_utils import (
     copy_static_files,
-    on_files,
     define_env,
     MACROS_UTILS_DIR,
     MACROS_UTILS_CSS,
     MACROS_UTILS_JS,
+    _get_docs_dir,
+    _load_config,
+    _load_extra_config,
 )
-from tests.python import MockMacrosPlugin
+from tests.python import MockMacroEnv
 
 
 @pytest.fixture(autouse=True)
@@ -102,49 +103,12 @@ def test_copy_static_files_update_only_newer(
     )
 
 
-# -- File Processing Tests ------------------------------
-def test_on_files() -> None:
-    """Test file processing during build"""
-    # Create mock files
-    files = Files(
-        [
-            File(
-                path="test.md", src_dir="docs", dest_dir="site", use_directory_urls=True
-            ),
-            File(
-                path=f"{MACROS_UTILS_DIR}/style.css",
-                src_dir="docs",
-                dest_dir="site",
-                use_directory_urls=True,
-            ),
-            File(
-                path="other/file.md",
-                src_dir="docs",
-                dest_dir="site",
-                use_directory_urls=True,
-            ),
-        ]
-    )
-
-    config = Config(schema=[])
-    result = on_files(files, config)
-
-    # Normalize paths to use forward slashes for consistent comparison
-    paths = [f.src_path.replace("\\", "/") for f in result]
-    expected_style_css = f"{MACROS_UTILS_DIR}/style.css".replace("\\", "/")
-
-    # Verify files are processed correctly
-    assert "test.md" in paths
-    assert expected_style_css in paths
-    assert "other/file.md" in paths
-
-
 # -- Environment Setup Tests ------------------------------
 def test_define_env_success(
     tmp_path: Path, caplog: LogCaptureFixture, monkeypatch: MonkeyPatch
 ) -> None:
     """Test successful environment setup"""
-    mock_env = MockMacrosPlugin(conf={"docs_dir": str(tmp_path)})
+    mock_env = MockMacroEnv()
 
     # Create necessary plugin directory structure
     plugin_dir = tmp_path / "plugin"
@@ -157,8 +121,10 @@ def test_define_env_success(
     for js_file in MACROS_UTILS_JS:
         (plugin_dir / "static" / "js" / js_file).write_text("/* JS */")
 
-    # Monkeypatch __file__ for plugin directory detection
+    # Monkeypatch plugin directory and docs directory
     monkeypatch.setattr("mkdocs_macros_utils.__file__", str(plugin_dir / "__init__.py"))
+    monkeypatch.setattr("mkdocs_macros_utils._get_docs_dir", lambda: tmp_path / "docs")
+    monkeypatch.setattr("mkdocs_macros_utils._load_extra_config", lambda: {})
 
     with caplog.at_level(logging.INFO):
         define_env(mock_env)
@@ -169,11 +135,101 @@ def test_define_env_success(
     assert hasattr(mock_env, "x_twitter_card")
 
 
-def test_define_env_failure(caplog: LogCaptureFixture) -> None:
+def test_define_env_failure(
+    caplog: LogCaptureFixture, monkeypatch: MonkeyPatch
+) -> None:
     """Test environment setup failure handling"""
-    mock_env = MockMacrosPlugin(conf={})  # Missing docs_dir
+    mock_env = MockMacroEnv()
+
+    # Make copy_static_files raise to trigger the error path
+    monkeypatch.setattr(
+        "mkdocs_macros_utils._get_docs_dir", lambda: Path("/nonexistent/readonly")
+    )
+    monkeypatch.setattr("mkdocs_macros_utils._load_extra_config", lambda: {})
+    monkeypatch.setattr(
+        "mkdocs_macros_utils.copy_static_files",
+        lambda *args: (_ for _ in ()).throw(RuntimeError("Simulated failure")),
+    )
 
     with caplog.at_level(logging.ERROR):
         define_env(mock_env)
 
     assert any("Failed to initialize" in record.message for record in caplog.records)
+
+
+# -- _get_docs_dir Tests ------------------------------
+def test_get_docs_dir_default(monkeypatch: MonkeyPatch, tmp_path: Path) -> None:
+    """Test _get_docs_dir returns CWD/docs when env var is not set."""
+    monkeypatch.delenv("MACROS_UTILS_DOCS_DIR", raising=False)
+    monkeypatch.chdir(tmp_path)
+    assert _get_docs_dir() == tmp_path / "docs"
+
+
+def test_get_docs_dir_relative_env(monkeypatch: MonkeyPatch, tmp_path: Path) -> None:
+    """Test _get_docs_dir with a relative path in MACROS_UTILS_DOCS_DIR."""
+    monkeypatch.setenv("MACROS_UTILS_DOCS_DIR", "custom_docs")
+    monkeypatch.chdir(tmp_path)
+    assert _get_docs_dir() == tmp_path / "custom_docs"
+
+
+def test_get_docs_dir_absolute_env(monkeypatch: MonkeyPatch, tmp_path: Path) -> None:
+    """Test _get_docs_dir with an absolute path in MACROS_UTILS_DOCS_DIR."""
+    monkeypatch.setenv("MACROS_UTILS_DOCS_DIR", str(tmp_path))
+    assert _get_docs_dir() == tmp_path
+
+
+# -- _load_config Tests ------------------------------
+def test_load_config_yaml_fallback(monkeypatch: MonkeyPatch, tmp_path: Path) -> None:
+    """Test _load_config reads mkdocs.yml when no zensical.toml exists."""
+    (tmp_path / "mkdocs.yml").write_text("site_name: Test\nextra:\n  debug: true\n")
+    monkeypatch.chdir(tmp_path)
+    config = _load_config()
+    assert config["site_name"] == "Test"
+    assert config["extra"]["debug"] is True
+
+
+def test_load_config_no_files(monkeypatch: MonkeyPatch, tmp_path: Path) -> None:
+    """Test _load_config returns empty dict when no config files exist."""
+    monkeypatch.chdir(tmp_path)
+    assert _load_config() == {}
+
+
+def test_load_config_invalid_toml_fallback(
+    monkeypatch: MonkeyPatch, tmp_path: Path
+) -> None:
+    """Test _load_config falls back to mkdocs.yml on invalid TOML."""
+    (tmp_path / "zensical.toml").write_bytes(b"invalid toml [[[")
+    (tmp_path / "mkdocs.yml").write_text("site_name: Fallback\n")
+    monkeypatch.chdir(tmp_path)
+    config = _load_config()
+    assert config.get("site_name") == "Fallback"
+
+
+def test_load_config_tomli_fallback(monkeypatch: MonkeyPatch, tmp_path: Path) -> None:
+    """Test _load_config uses tomli when tomllib stdlib is not available."""
+    (tmp_path / "zensical.toml").write_bytes(b'[project]\nsite_name = "TomliTest"\n')
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setitem(sys.modules, "tomllib", None)
+    config = _load_config()
+    assert config.get("site_name") == "TomliTest"
+
+
+# -- _load_extra_config Tests ------------------------------
+def test_load_extra_config(monkeypatch: MonkeyPatch, tmp_path: Path) -> None:
+    """Test _load_extra_config returns the extra section from config."""
+    (tmp_path / "mkdocs.yml").write_text("extra:\n  key: value\n")
+    monkeypatch.chdir(tmp_path)
+    assert _load_extra_config() == {"key": "value"}
+
+
+def test_load_extra_config_empty(monkeypatch: MonkeyPatch, tmp_path: Path) -> None:
+    """Test _load_extra_config returns empty dict when no extra section exists."""
+    monkeypatch.chdir(tmp_path)
+    assert _load_extra_config() == {}
+
+
+def test_load_config_invalid_yaml(monkeypatch: MonkeyPatch, tmp_path: Path) -> None:
+    """Test _load_config returns {} when YAML content is malformed."""
+    (tmp_path / "mkdocs.yml").write_text("key: [unclosed")
+    monkeypatch.chdir(tmp_path)
+    assert _load_config() == {}

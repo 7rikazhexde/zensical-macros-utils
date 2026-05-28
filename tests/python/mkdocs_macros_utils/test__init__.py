@@ -5,6 +5,7 @@ including static file copying and environment setup.
 """
 
 import os
+import sys
 import logging
 from pathlib import Path
 import pytest
@@ -16,6 +17,9 @@ from mkdocs_macros_utils import (
     MACROS_UTILS_DIR,
     MACROS_UTILS_CSS,
     MACROS_UTILS_JS,
+    _get_docs_dir,
+    _load_config,
+    _load_extra_config,
 )
 from tests.python import MockMacroEnv
 
@@ -151,3 +155,74 @@ def test_define_env_failure(
         define_env(mock_env)
 
     assert any("Failed to initialize" in record.message for record in caplog.records)
+
+
+# -- _get_docs_dir Tests ------------------------------
+def test_get_docs_dir_default(monkeypatch: MonkeyPatch, tmp_path: Path) -> None:
+    """Test _get_docs_dir returns CWD/docs when env var is not set."""
+    monkeypatch.delenv("MACROS_UTILS_DOCS_DIR", raising=False)
+    monkeypatch.chdir(tmp_path)
+    assert _get_docs_dir() == tmp_path / "docs"
+
+
+def test_get_docs_dir_relative_env(monkeypatch: MonkeyPatch, tmp_path: Path) -> None:
+    """Test _get_docs_dir with a relative path in MACROS_UTILS_DOCS_DIR."""
+    monkeypatch.setenv("MACROS_UTILS_DOCS_DIR", "custom_docs")
+    monkeypatch.chdir(tmp_path)
+    assert _get_docs_dir() == tmp_path / "custom_docs"
+
+
+def test_get_docs_dir_absolute_env(monkeypatch: MonkeyPatch, tmp_path: Path) -> None:
+    """Test _get_docs_dir with an absolute path in MACROS_UTILS_DOCS_DIR."""
+    monkeypatch.setenv("MACROS_UTILS_DOCS_DIR", str(tmp_path))
+    assert _get_docs_dir() == tmp_path
+
+
+# -- _load_config Tests ------------------------------
+def test_load_config_yaml_fallback(monkeypatch: MonkeyPatch, tmp_path: Path) -> None:
+    """Test _load_config reads mkdocs.yml when no zensical.toml exists."""
+    (tmp_path / "mkdocs.yml").write_text("site_name: Test\nextra:\n  debug: true\n")
+    monkeypatch.chdir(tmp_path)
+    config = _load_config()
+    assert config["site_name"] == "Test"
+    assert config["extra"]["debug"] is True
+
+
+def test_load_config_no_files(monkeypatch: MonkeyPatch, tmp_path: Path) -> None:
+    """Test _load_config returns empty dict when no config files exist."""
+    monkeypatch.chdir(tmp_path)
+    assert _load_config() == {}
+
+
+def test_load_config_invalid_toml_fallback(
+    monkeypatch: MonkeyPatch, tmp_path: Path
+) -> None:
+    """Test _load_config falls back to mkdocs.yml on invalid TOML."""
+    (tmp_path / "zensical.toml").write_bytes(b"invalid toml [[[")
+    (tmp_path / "mkdocs.yml").write_text("site_name: Fallback\n")
+    monkeypatch.chdir(tmp_path)
+    config = _load_config()
+    assert config.get("site_name") == "Fallback"
+
+
+def test_load_config_tomli_fallback(monkeypatch: MonkeyPatch, tmp_path: Path) -> None:
+    """Test _load_config uses tomli when tomllib stdlib is not available."""
+    (tmp_path / "zensical.toml").write_bytes(b'[project]\nsite_name = "TomliTest"\n')
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setitem(sys.modules, "tomllib", None)
+    config = _load_config()
+    assert config.get("site_name") == "TomliTest"
+
+
+# -- _load_extra_config Tests ------------------------------
+def test_load_extra_config(monkeypatch: MonkeyPatch, tmp_path: Path) -> None:
+    """Test _load_extra_config returns the extra section from config."""
+    (tmp_path / "mkdocs.yml").write_text("extra:\n  key: value\n")
+    monkeypatch.chdir(tmp_path)
+    assert _load_extra_config() == {"key": "value"}
+
+
+def test_load_extra_config_empty(monkeypatch: MonkeyPatch, tmp_path: Path) -> None:
+    """Test _load_extra_config returns empty dict when no extra section exists."""
+    monkeypatch.chdir(tmp_path)
+    assert _load_extra_config() == {}

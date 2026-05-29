@@ -2,6 +2,16 @@
 Zensical macros module for enhanced documentation components.
 """
 
+import warnings
+
+warnings.warn(
+    "mkdocs-macros-utils is deprecated and will no longer be maintained. "
+    "Please migrate to zensical-macros-utils: "
+    "https://pypi.org/project/zensical-macros-utils/",
+    DeprecationWarning,
+    stacklevel=2,
+)
+
 from pathlib import Path
 import shutil
 import logging

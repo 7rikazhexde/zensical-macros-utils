@@ -59,7 +59,7 @@ jobs:
       pull-requests: write
     steps:
       - name: Delete previous coverage comments
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           github-token: ${{ secrets.PAT_FOR_PUSHES }}
           script: |
@@ -109,7 +109,7 @@ jobs:
           echo "TZ environment variable: ${TZ}"
           python -c "import datetime, platform; print(f'Python timezone: {datetime.datetime.now().astimezone().tzinfo}'); print(f'OS: {platform.system()}')"
       - name: Install uv
-        uses: astral-sh/setup-uv@v6
+        uses: astral-sh/setup-uv@v7
         with:
           enable-cache: true
       - name: Install dependencies

@@ -2,7 +2,18 @@
 Zensical macros module for enhanced documentation components.
 """
 
+import logging
+import os
+import shutil
 import warnings
+from pathlib import Path
+from typing import Any, Dict
+
+from zensical.extensions.macros import MacroEnv
+
+from . import gist_codeblock
+from . import link_card
+from . import x_twitter_card
 
 warnings.warn(
     "mkdocs-macros-utils is deprecated and will no longer be maintained. "
@@ -11,17 +22,6 @@ warnings.warn(
     DeprecationWarning,
     stacklevel=2,
 )
-
-from pathlib import Path
-import shutil
-import logging
-import os
-from typing import Any, Dict
-from zensical.extensions.macros import MacroEnv
-
-from . import link_card
-from . import gist_codeblock
-from . import x_twitter_card
 
 logger = logging.getLogger("zensical.macros-utils")
 

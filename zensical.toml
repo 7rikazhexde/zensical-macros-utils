@@ -1,10 +1,10 @@
 [project]
-site_name = "MkDocs Macros Utils Documentation"
-site_description = "Documentation and examples for mkdocs-macros-utils plugin"
-site_url = "https://7rikazhexde.github.io/mkdocs-macros-utils/"
+site_name = "Zensical Macros Utils Documentation"
+site_description = "Documentation and examples for zensical-macros-utils"
+site_url = "https://7rikazhexde.github.io/zensical-macros-utils/"
 site_author = "7rikazhexde"
-repo_name = "7rikazhexde/mkdocs-macros-utils"
-repo_url = "https://github.com/7rikazhexde/mkdocs-macros-utils/"
+repo_name = "7rikazhexde/zensical-macros-utils"
+repo_url = "https://github.com/7rikazhexde/zensical-macros-utils/"
 copyright = "&copy; 2025 7rikazhexde"
 
 extra_css = [
@@ -59,7 +59,7 @@ toggle.name = "Switch to light mode"
 # without overriding them
 # ----------------------------------------------------------------------------
 [project.plugins.macros]
-modules = ["mkdocs_macros_utils"]
+modules = ["zensical_macros_utils"]
 
 # ----------------------------------------------------------------------------
 # Extra

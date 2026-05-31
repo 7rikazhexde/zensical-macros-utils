@@ -11,7 +11,7 @@ from pathlib import Path
 import pytest
 from _pytest.logging import LogCaptureFixture
 from pytest import MonkeyPatch
-from mkdocs_macros_utils import (
+from zensical_macros_utils import (
     copy_static_files,
     define_env,
     MACROS_UTILS_DIR,
@@ -122,9 +122,13 @@ def test_define_env_success(
         (plugin_dir / "static" / "js" / js_file).write_text("/* JS */")
 
     # Monkeypatch plugin directory and docs directory
-    monkeypatch.setattr("mkdocs_macros_utils.__file__", str(plugin_dir / "__init__.py"))
-    monkeypatch.setattr("mkdocs_macros_utils._get_docs_dir", lambda: tmp_path / "docs")
-    monkeypatch.setattr("mkdocs_macros_utils._load_extra_config", lambda: {})
+    monkeypatch.setattr(
+        "zensical_macros_utils.__file__", str(plugin_dir / "__init__.py")
+    )
+    monkeypatch.setattr(
+        "zensical_macros_utils._get_docs_dir", lambda: tmp_path / "docs"
+    )
+    monkeypatch.setattr("zensical_macros_utils._load_extra_config", lambda: {})
 
     with caplog.at_level(logging.INFO):
         define_env(mock_env)
@@ -143,11 +147,11 @@ def test_define_env_failure(
 
     # Make copy_static_files raise to trigger the error path
     monkeypatch.setattr(
-        "mkdocs_macros_utils._get_docs_dir", lambda: Path("/nonexistent/readonly")
+        "zensical_macros_utils._get_docs_dir", lambda: Path("/nonexistent/readonly")
     )
-    monkeypatch.setattr("mkdocs_macros_utils._load_extra_config", lambda: {})
+    monkeypatch.setattr("zensical_macros_utils._load_extra_config", lambda: {})
     monkeypatch.setattr(
-        "mkdocs_macros_utils.copy_static_files",
+        "zensical_macros_utils.copy_static_files",
         lambda *args: (_ for _ in ()).throw(RuntimeError("Simulated failure")),
     )
 

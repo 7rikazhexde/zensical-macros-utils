@@ -573,49 +573,6 @@ wheels = [
 ]
 
 [[package]]
-name = "mkdocs-macros-utils"
-version = "0.0.11"
-source = { editable = "." }
-dependencies = [
-    { name = "jinja2" },
-    { name = "pygments" },
-    { name = "requests" },
-    { name = "zensical" },
-]
-
-[package.dev-dependencies]
-dev = [
-    { name = "mypy" },
-    { name = "pre-commit" },
-    { name = "pytest" },
-    { name = "pytest-cov" },
-    { name = "pytest-mock" },
-    { name = "pytest-xdist" },
-    { name = "ruff" },
-    { name = "taskipy" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "jinja2", specifier = ">=3.0.0" },
-    { name = "pygments", specifier = ">=2.19.1" },
-    { name = "requests", specifier = ">=2.25.0" },
-    { name = "zensical", specifier = ">=0.0.41" },
-]
-
-[package.metadata.requires-dev]
-dev = [
-    { name = "mypy", specifier = ">=1.14.1,<3.0.0" },
-    { name = "pre-commit", specifier = ">=4.1.0" },
-    { name = "pytest", specifier = ">=8.3.4,<10.0.0" },
-    { name = "pytest-cov", specifier = ">=6,<8" },
-    { name = "pytest-mock", specifier = ">=3.14.0" },
-    { name = "pytest-xdist", specifier = ">=3.6.1" },
-    { name = "ruff", specifier = ">=0.9.4,<0.16.0" },
-    { name = "taskipy", specifier = ">=1.14.1" },
-]
-
-[[package]]
 name = "mslex"
 version = "1.3.0"
 source = { registry = "https://pypi.org/simple" }
@@ -1095,4 +1052,47 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/fd/e8/ecbb7e34bff88aa892c676b8b2e2ddf425f94d66cbb84b80016095191b77/zensical-0.0.41-cp310-abi3-musllinux_1_2_x86_64.whl", hash = "sha256:1736f0cb7686628cc6f53952d208423f20b542f0c16b0c2ddd7e702bf6e41fdd", size = 13263093, upload-time = "2026-05-09T14:35:20.826Z" },
     { url = "https://files.pythonhosted.org/packages/c1/6f/48b2f81ce708d19bb807d94716f2772ec4b74389b6d29024669fc470df08/zensical-0.0.41-cp310-abi3-win32.whl", hash = "sha256:34a78645c68fba152faacb66516c895283166154f8b15b61440a6c21c84f0974", size = 12253644, upload-time = "2026-05-09T14:35:23.598Z" },
     { url = "https://files.pythonhosted.org/packages/a0/92/5cf943133f61b996965743deeaff467f278135521f58d83ca68d2601ded3/zensical-0.0.41-cp310-abi3-win_amd64.whl", hash = "sha256:00d80cd573152e0efb655143bbdfe8788eb4b33167a802639fdb1b1800b724ac", size = 12483190, upload-time = "2026-05-09T14:35:26.43Z" },
+]
+
+[[package]]
+name = "zensical-macros-utils"
+version = "0.10.0"
+source = { editable = "." }
+dependencies = [
+    { name = "jinja2" },
+    { name = "pygments" },
+    { name = "requests" },
+    { name = "zensical" },
+]
+
+[package.dev-dependencies]
+dev = [
+    { name = "mypy" },
+    { name = "pre-commit" },
+    { name = "pytest" },
+    { name = "pytest-cov" },
+    { name = "pytest-mock" },
+    { name = "pytest-xdist" },
+    { name = "ruff" },
+    { name = "taskipy" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "jinja2", specifier = ">=3.0.0" },
+    { name = "pygments", specifier = ">=2.19.1" },
+    { name = "requests", specifier = ">=2.25.0" },
+    { name = "zensical", specifier = ">=0.0.41" },
+]
+
+[package.metadata.requires-dev]
+dev = [
+    { name = "mypy", specifier = ">=1.14.1,<3.0.0" },
+    { name = "pre-commit", specifier = ">=4.1.0" },
+    { name = "pytest", specifier = ">=8.3.4,<10.0.0" },
+    { name = "pytest-cov", specifier = ">=6,<8" },
+    { name = "pytest-mock", specifier = ">=3.14.0" },
+    { name = "pytest-xdist", specifier = ">=3.6.1" },
+    { name = "ruff", specifier = ">=0.9.4,<0.16.0" },
+    { name = "taskipy", specifier = ">=1.14.1" },
 ]

@@ -1,7 +1,7 @@
 [project]
-name = "mkdocs-macros-utils"
-version = "0.0.11"
-description = "mkdocs-macros-utils is a zensical-based project that provides macros to extend cards, code blocks, etc, in MkDocs documents."
+name = "zensical-macros-utils"
+version = "0.10.0"
+description = "zensical-macros-utils is a zensical-based project that provides macros to extend cards, code blocks, etc, in MkDocs documents."
 authors = [
     {name = "7rikazhexde", email = "33836132+7rikazhexde@users.noreply.github.com"}
 ]
@@ -16,16 +16,16 @@ dependencies = [
 ]
 
 [project.urls]
-homepage = "https://github.com/7rikazhexde/mkdocs-macros-utils"
-repository = "https://github.com/7rikazhexde/mkdocs-macros-utils"
-documentation = "https://7rikazhexde.github.io/mkdocs-macros-utils/"
+homepage = "https://github.com/7rikazhexde/zensical-macros-utils"
+repository = "https://github.com/7rikazhexde/zensical-macros-utils"
+documentation = "https://7rikazhexde.github.io/zensical-macros-utils/"
 
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
-packages = ["mkdocs_macros_utils"]
+packages = ["zensical_macros_utils"]
 
 [dependency-groups]
 dev = [
@@ -49,7 +49,7 @@ testcoverage = "pytest --cov=. --cov-branch --cov-report=term-missing --cov-repo
 
 # Type checking configuration
 [tool.mypy]
-files = ["mkdocs_macros_utils", "tests"]
+files = ["zensical_macros_utils", "tests"]
 explicit_package_bases = true
 python_version = "3.12"
 show_error_context = true

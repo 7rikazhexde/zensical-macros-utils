@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**mkdocs-macros-utils** is a [zensical](https://zensical.org/) macros module that provides reusable Jinja2 macros for link cards, GitHub Gist code blocks, and X/Twitter embeds. It is loaded via `zensical.extensions.macros` (the built-in macros extension in zensical v0.0.40+). The module automatically copies its own CSS/JS static assets into the docs directory on first use.
+**zensical-macros-utils** is a [zensical](https://zensical.org/) macros module that provides reusable Jinja2 macros for link cards, GitHub Gist code blocks, and X/Twitter embeds. It is loaded via `zensical.extensions.macros` (the built-in macros extension in zensical v0.0.40+). The module automatically copies its own CSS/JS static assets into the docs directory on first use.
 
 ## Development Setup
 
@@ -24,7 +24,7 @@ npm install             # Install JavaScript test dependencies
 uv run task testcoverageverbose
 
 # Run a single test file
-uv run pytest tests/python/mkdocs_macros_utils/test_link_card.py -s -vv
+uv run pytest tests/python/zensical_macros_utils/test_link_card.py -s -vv
 
 # Run tests matching a marker
 uv run pytest -m link_card -s -vv
@@ -58,7 +58,7 @@ Pre-commit runs ruff, mypy, and several other checks. To run manually:
 ```sh
 uv run ruff check .             # Lint
 uv run ruff format .            # Format
-uv run mypy mkdocs_macros_utils/
+uv run mypy zensical_macros_utils/
 pre-commit run --all-files      # Run all hooks
 ```
 
@@ -66,10 +66,11 @@ mypy is configured with `disallow_untyped_defs = true` — all functions must be
 
 ## Architecture
 
-### Module Lifecycle (`mkdocs_macros_utils/__init__.py`)
+### Module Lifecycle (`zensical_macros_utils/__init__.py`)
 
 The module exports `define_env(env: MacroEnv)` called by zensical's macros extension:
-- Reads `mkdocs.yml` (via `_load_config()`) to get `docs_dir`, `site_url`, and `extra` settings
+
+- Reads `zensical.toml` (via `_load_config()`) to get `docs_dir`, `site_url`, and `extra` settings
 - Copies CSS/JS static assets into `docs/` via `copy_static_files()` (skips if already up-to-date)
 - Registers the three macros by calling each sub-module's `define_env`
 
@@ -78,7 +79,7 @@ Use `MACROS_UTILS_DOCS_DIR` env var to override the default `docs/` target direc
 ### Macro Modules
 
 | Module | Macro | What it does |
-|---|---|---|
+| --- | --- | --- |
 | `link_card.py` | `link_card(url, ...)` | Fetches SVG icons (from GitHub Gists), renders an HTML link card with image/SVG, domain, and description. Uses `env.variables["_site_url"]` for base URL. |
 | `gist_codeblock.py` | `gist_codeblock(gist_url, ...)` | Fetches raw Gist content via GitHub API, auto-detects language via filename extension and Pygments, returns a fenced Markdown code block |
 | `x_twitter_card.py` | `x_twitter_card(url)` | Normalizes x.com/twitter.com URLs and renders a Twitter embed widget with dark mode support |
@@ -86,7 +87,8 @@ Use `MACROS_UTILS_DOCS_DIR` env var to override the default `docs/` target direc
 
 ### Tests (`tests/python/`)
 
-Tests mirror the source layout under `tests/python/mkdocs_macros_utils/`. Shared fixtures live in `tests/python/conftest.py`, including:
+Tests mirror the source layout under `tests/python/zensical_macros_utils/`. Shared fixtures live in `tests/python/conftest.py`, including:
+
 - `MockMacroEnv` — simulates the zensical `MacroEnv` object (has `variables`, `macros`, `filters`, `macro()`, `filter()`)
 - `mock_requests_get()` helper — patches `requests.get` for HTTP calls
 - `processor` fixture — pre-built `GistProcessor` instance

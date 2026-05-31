@@ -1,10 +1,6 @@
-# mkdocs-macros-utils
+# zensical-macros-utils
 
-!!! warning "Deprecated"
-
-    This package is no longer maintained. Please migrate to **[zensical-macros-utils](https://pypi.org/project/zensical-macros-utils/)**.
-
-[mkdocs-macros-utils](https://pypi.org/project/mkdocs-macros-utils/) is a [zensical](https://zensical.org/)-based project that provides macros to extend cards, code blocks, etc, in MkDocs documents.
+[zensical-macros-utils](https://pypi.org/project/zensical-macros-utils/) is a [zensical](https://zensical.org/)-based project that provides macros to extend cards, code blocks, etc, in MkDocs documents.
 
 ## Features
 
@@ -14,18 +10,18 @@
 
 ## Usage
 
-### Install [mkdocs-macros-utils](https://pypi.org/project/mkdocs-macros-utils/)
+### Install [zensical-macros-utils](https://pypi.org/project/zensical-macros-utils/)
 
 !!! info "For pip"
 
     ```bash
-    pip install mkdocs-macros-utils
+    pip install zensical-macros-utils
     ```
 
 !!! info "For uv"
 
     ```bash
-    uv add mkdocs-macros-utils
+    uv add zensical-macros-utils
     ```
 
 ### Config settings
@@ -44,7 +40,7 @@
     ]
 
     [project.plugins.macros]
-    modules = ["mkdocs_macros_utils"]
+    modules = ["zensical_macros_utils"]
 
     [project.extra.debug]
     link_card = false

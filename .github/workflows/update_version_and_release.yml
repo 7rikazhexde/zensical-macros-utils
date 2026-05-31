@@ -136,7 +136,7 @@ jobs:
         uses: softprops/action-gh-release@v3.0.0
         with:
           tag_name: v${{ steps.update_version.outputs.new_version }}
-          name: mkdocs-macros-utils-v${{ steps.update_version.outputs.new_version }}
+          name: zensical-macros-utils-v${{ steps.update_version.outputs.new_version }}
           body: |
             ## Changes in this Release
 

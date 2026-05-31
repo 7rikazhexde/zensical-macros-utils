@@ -1,5 +1,5 @@
 """
-Tests for X/Twitter Card module in MkDocs Macros Utils.
+Tests for X/Twitter Card module in Zensical Macros Utils.
 This module tests the functionality for creating and managing X/Twitter cards,
 including URL validation, standardization, and card generation.
 """

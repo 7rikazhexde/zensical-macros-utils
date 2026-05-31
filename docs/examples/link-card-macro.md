@@ -1,20 +1,19 @@
 ---
-title: MkDocs Custom Link Card Macro
+title: Zensical Custom Link Card Macro
 tags:
-  - MkDocs Macros
+  - Zensical Macros
   - Custom Component
   - Link Card
-  - Material for Mkdocs
-description: Documentation showing a macro for creating custom link card macros using the MkDocs Macros Plugin
+description: Documentation showing a macro for creating custom link card macros using the Zensical Macros Plugin
 ---
 
 # Link Card Macro
 
 ## Summary
 
-This section describes a macro to display custom link cards in Mkdocs.
+This section describes a macro to display custom link cards in Zensical.
 
-!!! info "This macro is assumed to be used with [Material for Mkdocs](https://squidfunk.github.io/mkdocs-material/)."
+!!! info "This macro is assumed to be used with [Zensical](https://zensical.org/)."
 
 ## Usage
 
@@ -56,15 +55,15 @@ Create a link card based on the css settings and the values specified in the par
     ```markdown
     {% raw %}
     {{ link_card(
-        url="https://7rikazhexde.github.io/mkdocs-macros-utils/",
-        title="MkDocs Macros Utils Documentation",
+        url="https://7rikazhexde.github.io/Zensical-macros-utils/",
+        title="Zensical Macros Utils Documentation",
     ) }}
     {% endraw %}
     ```
 
 {{ link_card(
-    url="https://7rikazhexde.github.io/mkdocs-macros-utils/",
-    title="MkDocs Macros Utils Documentation",
+    url="https://7rikazhexde.github.io/Zensical-macros-utils/",
+    title="Zensical Macros Utils Documentation",
 ) }}
 
 #### Examples of maximum parameters

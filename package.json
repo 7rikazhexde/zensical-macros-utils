@@ -1,7 +1,7 @@
 {
   "name": "zensical-macros-utils",
   "version": "0.1.0",
-  "description": "`zensical-macros-utils` is a zensical-based project that provides macros to extend cards, code blocks, etc, in MkDocs documents.",
+  "description": "`zensical-macros-utils` is a zensical-based project that provides macros to extend cards, code blocks, etc, in Zensical documents.",
   "main": "index.js",
   "directories": {
     "doc": "docs",

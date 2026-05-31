@@ -1,5 +1,5 @@
 """
-Tests for Gist codeblock module in MkDocs Macros Utils
+Tests for Gist codeblock module in Zensical Macros Utils
 """
 
 from typing import Any, List, Optional, Tuple, Type, cast

@@ -1,6 +1,6 @@
 # zensical-macros-utils
 
-[zensical-macros-utils](https://pypi.org/project/zensical-macros-utils/) is a [zensical](https://zensical.org/)-based project that provides macros to extend cards, code blocks, etc, in MkDocs documents.
+[zensical-macros-utils](https://pypi.org/project/zensical-macros-utils/) is a [zensical](https://zensical.org/)-based project that provides macros to extend cards, code blocks, etc, in Zensical documents.
 
 [![pages-build-deployment](https://github.com/7rikazhexde/zensical-macros-utils/actions/workflows/pages/pages-build-deployment/badge.svg?branch=gh-pages)](https://github.com/7rikazhexde/zensical-macros-utils/actions/workflows/pages/pages-build-deployment) [![DOCS](https://img.shields.io/badge/Docs-Click%20Here-blue?colorA=24292e&colorB=0366d6&logo=github)](https://7rikazhexde.github.io/zensical-macros-utils/)
 

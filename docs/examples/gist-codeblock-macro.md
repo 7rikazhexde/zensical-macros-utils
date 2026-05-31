@@ -1,20 +1,19 @@
 ---
-title: MkDocs Custom Gist Codeblock Macro
+title: Zensical Custom Gist Codeblock Macro
 tags:
-  - MkDocs Macros
+  - Zensical Macros
   - Custom Component
   - Gist
-  - Material for Mkdocs
-description: Documentation showing macros for generating Gist code blocks using the MkDocs Macros Plugin
+description: Documentation showing macros for generating Gist code blocks using the Zensical Macros Plugin
 ---
 
 # Gist Codeblock Macro
 
 ## Summary
 
-This section describes a macro that displays Gist code in a Mkdocs code block.
+This section describes a macro that displays Gist code in a Zensical code block.
 
-!!! note "This macro is assumed to be used with [Material for Mkdocs](https://squidfunk.github.io/mkdocs-material/)."
+!!! note "This macro is assumed to be used with [Zensical](https://zensical.org/)."
 
 ## Usage
 
@@ -60,7 +59,7 @@ Macro：`gist_codeblock`
 
 !!! tip
 
-    Must be specified if the code is to be displayed within a block of [admonition](https://squidfunk.github.io/mkdocs-material/reference/admonitions/).
+    Must be specified if the code is to be displayed within a block of [admonition](https://zensical.org/docs/authoring/admonitions/).
 
 ??? info "Specify indentation level"
 

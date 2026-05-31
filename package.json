@@ -1,7 +1,7 @@
 {
-  "name": "mkdocs-macros-utils",
-  "version": "0.0.11",
-  "description": "`mkdocs-macros-utils` is a deprecated package. Please migrate to zensical-macros-utils.",
+  "name": "zensical-macros-utils",
+  "version": "0.1.0",
+  "description": "`zensical-macros-utils` is a zensical-based project that provides macros to extend cards, code blocks, etc, in MkDocs documents.",
   "main": "index.js",
   "directories": {
     "doc": "docs",
@@ -14,15 +14,15 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/7rikazhexde/mkdocs-macros-utils.git"
+    "url": "git+https://github.com/7rikazhexde/zensical-macros-utils.git"
   },
   "keywords": [],
   "author": "",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/7rikazhexde/mkdocs-macros-utils/issues"
+    "url": "https://github.com/7rikazhexde/zensical-macros-utils/issues"
   },
-  "homepage": "https://github.com/7rikazhexde/mkdocs-macros-utils#readme",
+  "homepage": "https://github.com/7rikazhexde/zensical-macros-utils#readme",
   "devDependencies": {
     "@babel/core": "^7.29.7",
     "@babel/preset-env": "^7.29.7",

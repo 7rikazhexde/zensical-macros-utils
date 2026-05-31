@@ -8,7 +8,7 @@ from typing import Any, cast, Optional
 import pytest
 from pytest import MonkeyPatch
 import requests
-from mkdocs_macros_utils.link_card import (
+from zensical_macros_utils.link_card import (
     get_gist_content,
     get_svg_content,
     extract_domain_for_display,
@@ -16,7 +16,7 @@ from mkdocs_macros_utils.link_card import (
     create_link_card,
     define_env,
 )
-from mkdocs_macros_utils.debug_logger import DebugLogger
+from zensical_macros_utils.debug_logger import DebugLogger
 from tests.python import MockMacroEnv
 
 
@@ -78,7 +78,7 @@ def test_get_svg_content(monkeypatch: MonkeyPatch, mock_logger: DebugLogger) -> 
         return "<svg>Test</svg>"
 
     monkeypatch.setattr(
-        "mkdocs_macros_utils.link_card.get_gist_content", mock_get_gist_content
+        "zensical_macros_utils.link_card.get_gist_content", mock_get_gist_content
     )
 
     # Test different domain types
@@ -176,7 +176,7 @@ def test_create_link_card_svg_path(
         return "<svg>Custom</svg>"
 
     monkeypatch.setattr(
-        "mkdocs_macros_utils.link_card.get_gist_content", mock_get_gist_content
+        "zensical_macros_utils.link_card.get_gist_content", mock_get_gist_content
     )
 
     result = create_link_card(
@@ -257,7 +257,7 @@ def test_create_link_card_full_options(
         return None
 
     monkeypatch.setattr(
-        "mkdocs_macros_utils.link_card.get_svg_content", mock_get_svg_content
+        "zensical_macros_utils.link_card.get_svg_content", mock_get_svg_content
     )
 
     result = create_link_card(

@@ -6,8 +6,8 @@ from typing import Any, List, Optional, Tuple, Type, cast
 from pytest import MonkeyPatch
 from pytest_mock import MockerFixture
 import requests
-from mkdocs_macros_utils.gist_codeblock import GistProcessor
-from mkdocs_macros_utils.debug_logger import DebugLogger
+from zensical_macros_utils.gist_codeblock import GistProcessor
+from zensical_macros_utils.debug_logger import DebugLogger
 from tests.python import MockMacroEnv
 
 
@@ -193,9 +193,9 @@ def test_detect_language_from_content_with_lexer(mocker: MockerFixture) -> None:
     mock_lexer.aliases = ["python"]
     mock_lexer.name = "Python"
     mocker.patch(
-        "mkdocs_macros_utils.gist_codeblock.guess_lexer", return_value=mock_lexer
+        "zensical_macros_utils.gist_codeblock.guess_lexer", return_value=mock_lexer
     )
-    mocker.patch("mkdocs_macros_utils.gist_codeblock.isinstance", return_value=False)
+    mocker.patch("zensical_macros_utils.gist_codeblock.isinstance", return_value=False)
 
     result = processor.detect_language_from_content("print('test')", filename=None)
     assert result == "python"
@@ -207,7 +207,7 @@ def test_detect_language_from_content_exception_handling(mocker: MockerFixture) 
     processor = GistProcessor(logger)
 
     mocker.patch(
-        "mkdocs_macros_utils.gist_codeblock.guess_lexer",
+        "zensical_macros_utils.gist_codeblock.guess_lexer",
         side_effect=Exception("Test error"),
     )
 

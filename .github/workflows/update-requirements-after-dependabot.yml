@@ -54,9 +54,9 @@ jobs:
               -d "$json_payload" \
               "https://api.github.com/gists/$gist_id" || echo "Failed to upload $file to Gist"
           }
-          # mkdocs-macros-utils-requirements.txt: https://gist.github.com/7rikazhexde/32a882e7e14cbfc8c0e4b2d8a6bdf773
+          # zensical-macros-utils-requirements.txt: https://gist.github.com/7rikazhexde/32a882e7e14cbfc8c0e4b2d8a6bdf773
           upload_to_gist "requirements.txt" "32a882e7e14cbfc8c0e4b2d8a6bdf773"
-          # mkdocs-macros-utils-requirements-dev.txt: https://gist.github.com/7rikazhexde/a158a9f8e76172f76e047f265b739c9a
+          # zensical-macros-utils-requirements-dev.txt: https://gist.github.com/7rikazhexde/a158a9f8e76172f76e047f265b739c9a
           upload_to_gist "requirements-dev.txt" "a158a9f8e76172f76e047f265b739c9a"
 
       - name: Clean up local requirements files

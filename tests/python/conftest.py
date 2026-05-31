@@ -6,8 +6,8 @@ This module provides shared test utilities including mock classes and fixtures.
 from typing import Any, Callable, Dict, List, Optional, Type
 import pytest
 from pytest import Config
-from mkdocs_macros_utils.debug_logger import DebugLogger
-from mkdocs_macros_utils.gist_codeblock import GistProcessor, define_env
+from zensical_macros_utils.debug_logger import DebugLogger
+from zensical_macros_utils.gist_codeblock import GistProcessor, define_env
 
 
 class MockMacroEnv:

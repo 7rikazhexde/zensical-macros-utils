@@ -6,13 +6,13 @@ including URL validation, standardization, and card generation.
 
 from typing import Any, cast
 import pytest
-from mkdocs_macros_utils.x_twitter_card import (
+from zensical_macros_utils.x_twitter_card import (
     validate_x_twitter_url,
     standardize_twitter_url,
     create_x_twitter_card,
     define_env,
 )
-from mkdocs_macros_utils.debug_logger import DebugLogger
+from zensical_macros_utils.debug_logger import DebugLogger
 from tests.python import MockMacroEnv
 
 

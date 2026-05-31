@@ -5,7 +5,9 @@ name: Version Update and Release
 #    - Manual execution (workflow_dispatch)
 # 2. Environment Setup (Ubuntu, Python, uv, Node.js)
 # 3. Retrieve the current version from pyproject.toml and package.json
-# 4. Update to the new version (patch, minor, or major) for both files
+# 4. Update to the new version:
+#    - If 'version' input is set, use it directly (overrides update_type)
+#    - Otherwise calculate from 'update_type' (patch/minor/major)
 # 5. Commit and push the changes
 # 6. Create and push a new tag
 # 7. Generate the changelog
@@ -14,9 +16,13 @@ name: Version Update and Release
 on:
   workflow_dispatch:
     inputs:
+      version:
+        description: "Specific version to set (e.g. 0.1.2). Overrides update_type if provided."
+        required: false
+        type: string
       update_type:
-        description: "Type of version update"
-        required: true
+        description: "Type of version update (used when version is not specified)"
+        required: false
         default: "patch"
         type: choice
         options:
@@ -66,24 +72,31 @@ jobs:
           new_version=$(python - <<'EOF'
           import tomllib, re, sys
 
+          version_input = "${{ github.event.inputs.version }}".strip()
           update_type = "${{ github.event.inputs.update_type }}"
+
           with open('pyproject.toml', 'rb') as f:
               data = tomllib.load(f)
 
           version = data['project']['version']
-          major, minor, patch = map(int, version.split('.'))
 
-          if update_type == 'patch':
-              patch += 1
-          elif update_type == 'minor':
-              minor += 1
-              patch = 0
-          elif update_type == 'major':
-              major += 1
-              minor = 0
-              patch = 0
-
-          new_version = f'{major}.{minor}.{patch}'
+          if version_input:
+              if not re.fullmatch(r'\d+\.\d+\.\d+', version_input):
+                  print(f"Error: '{version_input}' is not a valid version (expected x.y.z)", file=sys.stderr)
+                  sys.exit(1)
+              new_version = version_input
+          else:
+              major, minor, patch = map(int, version.split('.'))
+              if update_type == 'patch':
+                  patch += 1
+              elif update_type == 'minor':
+                  minor += 1
+                  patch = 0
+              elif update_type == 'major':
+                  major += 1
+                  minor = 0
+                  patch = 0
+              new_version = f'{major}.{minor}.{patch}'
 
           with open('pyproject.toml', 'r') as f:
               content = f.read()
@@ -102,13 +115,14 @@ jobs:
           print(new_version)
           EOF
           )
-          npm version ${{ github.event.inputs.update_type }} --no-git-tag-version --no-commit-hooks
+          npm version ${new_version} --no-git-tag-version --no-commit-hooks
+          uv sync
           echo "new_version=${new_version}" >> "$GITHUB_OUTPUT"
 
       - name: Commit and push if changed
         run: |
-          git add pyproject.toml package.json package-lock.json
-          git commit -m ":wrench:Bump version to ${{ steps.update_version.outputs.new_version }}" || echo "No changes to commit"
+          git add pyproject.toml package.json package-lock.json uv.lock
+          git commit -m "chore: bump version to ${{ steps.update_version.outputs.new_version }}" || echo "No changes to commit"
           git push
 
       - name: Create and push new tag

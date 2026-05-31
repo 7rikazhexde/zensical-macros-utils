@@ -1,6 +1,6 @@
 [project]
 name = "zensical-macros-utils"
-version = "0.1.0"
+version = "0.1.1"
 description = "zensical-macros-utils is a zensical-based project that provides macros to extend cards, code blocks, etc, in Zensical documents."
 authors = [
     {name = "7rikazhexde", email = "33836132+7rikazhexde@users.noreply.github.com"}

@@ -1,3 +1,10 @@
+---
+title: Examples
+tags: 
+ - Examples
+description: Examples
+---
+
 # Examples
 
 - [Link Card](./link-card-macro.md)

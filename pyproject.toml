@@ -1,7 +1,7 @@
 [project]
 name = "zensical-macros-utils"
 version = "0.1.0"
-description = "zensical-macros-utils is a zensical-based project that provides macros to extend cards, code blocks, etc, in MkDocs documents."
+description = "zensical-macros-utils is a zensical-based project that provides macros to extend cards, code blocks, etc, in Zensical documents."
 authors = [
     {name = "7rikazhexde", email = "33836132+7rikazhexde@users.noreply.github.com"}
 ]
@@ -36,16 +36,8 @@ dev = [
     "pytest-cov>=6,<8",
     "pytest-mock>=3.14.0",
     "pytest-xdist>=3.6.1",
-    "taskipy>=1.14.1",
+    "ruamel-yaml>=0.18.0",
 ]
-
-# Task runner configuration
-[tool.taskipy.tasks]
-testcoverageverbose = "pytest -s -vv --cov=. --cov-branch --cov-report term-missing --cov-report html"
-testhtmlreport = "pytest --html=htmlcov/report_page.html"
-testcixml = "python scripts/run_tests.py --report xml"
-testciterm = "python scripts/run_tests.py --report term"
-testcoverage = "pytest --cov=. --cov-branch --cov-report=term-missing --cov-report=html"
 
 # Type checking configuration
 [tool.mypy]

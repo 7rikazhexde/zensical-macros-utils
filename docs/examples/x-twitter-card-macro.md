@@ -1,18 +1,18 @@
 ---
-title: MkDocs Custom X-Twitter Link Card Macro
+title: Zensical Custom X-Twitter Link Card Macro
 tags:
- - MkDocs Macros
+ - Zensical Macros
  - Custom Component
  - Link Card
  - X(Twitter)
-description: Documentation showing a macro to display X (formerly Twitter) link cards using the MkDocs Macros Plugin.
+description: Documentation showing a macro to display X (formerly Twitter) link cards using the Zensical Macros Plugin.
 ---
 
 # X-Twitter Link Card Macro
 
 ## Summary
 
-This page describes a macro to display X (formerly Twitter) link cards using MkDocs.
+This page describes a macro to display X (formerly Twitter) link cards using Zensical.
 
 ## Usage
 

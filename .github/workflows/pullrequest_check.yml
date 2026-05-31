@@ -108,6 +108,12 @@ jobs:
           echo "System date: $(date)"
           echo "TZ environment variable: ${TZ}"
           python -c "import datetime, platform; print(f'Python timezone: {datetime.datetime.now().astimezone().tzinfo}'); print(f'OS: {platform.system()}')"
+      - name: Set up Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: stable
+      - name: Install Just
+        run: cargo install just
       - name: Install uv
         uses: astral-sh/setup-uv@v7
         with:
@@ -118,7 +124,7 @@ jobs:
         id: pytest
         shell: bash
         run: |
-          uv run task testcixml
+          just test-ci-xml
           coverage_percentage=$(uv run coverage report | grep TOTAL | awk '{print $NF}' | sed 's/%//')
           echo "Current coverage: ${coverage_percentage}%"
           echo "COVERAGE=${coverage_percentage}" >> "$GITHUB_ENV"

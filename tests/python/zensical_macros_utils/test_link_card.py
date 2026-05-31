@@ -1,5 +1,5 @@
 """
-Tests for Link Card module in MkDocs Macros Utils.
+Tests for Link Card module in Zensical Macros Utils.
 This module tests the functionality for creating and managing link cards,
 including URL processing, SVG content retrieval, and card generation.
 """

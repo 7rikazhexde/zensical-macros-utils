@@ -1,5 +1,5 @@
 """
-Tests for Debug Logger module in MkDocs Macros Utils
+Tests for Debug Logger module in Zensical Macros Utils
 """
 
 import pytest

@@ -32,11 +32,14 @@ nav:
 
 # ----------------------------------------------------------------------------
 # Theme (Material for MkDocs)
-# When using zensical, variant: classic is the default.
+# variant: classic uses the traditional Roboto font stack.
+# Omitting variant (or setting it to "modern") uses zensical's new design
+# with Inter/JetBrains Mono fonts and Lucide icons.
 # ----------------------------------------------------------------------------
 theme:
   name: material
   custom_dir: overrides
+  variant: classic
   features:
     - content.code.copy
     - content.code.select

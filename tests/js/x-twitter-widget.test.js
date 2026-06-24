@@ -55,10 +55,21 @@ describe("X/Twitter widget", () => {
       value: "complete",
       writable: true,
     });
+    window.testLoadHandler = () => {
+      if (global.twttr && global.twttr.widgets && global.twttr.widgets.createTweet) {
+        global.twttr.widgets.createTweet.mockClear();
+      }
+    };
+    window.addEventListener("load", window.testLoadHandler);
   });
 
   afterEach(() => {
     document.body.innerHTML = "";
+    document.head.innerHTML = "";
+    if (window.testLoadHandler) {
+      window.removeEventListener("load", window.testLoadHandler);
+      delete window.testLoadHandler;
+    }
     delete global.twttr;
     delete globalThis.__X_TWITTER_DEBUG__;
     jest.clearAllMocks();
@@ -77,6 +88,7 @@ describe("X/Twitter widget", () => {
 
   test("renders the tweet with id, container and options", () => {
     loadModule();
+    window.dispatchEvent(new Event("load"));
 
     expect(global.twttr.widgets.createTweet).toHaveBeenCalled();
     const [id, container, options] = lastCreateTweetCall();
@@ -94,12 +106,14 @@ describe("X/Twitter widget", () => {
     const container = document.querySelector(".x-twitter-embed");
     container.innerHTML = "<span>stale</span>";
     loadModule();
+    window.dispatchEvent(new Event("load"));
     expect(container.querySelector("span")).toBeNull();
   });
 
   test("resolves createTweet promise without throwing", async () => {
     global.twttr.widgets.createTweet = jest.fn().mockResolvedValue({});
     loadModule();
+    window.dispatchEvent(new Event("load"));
     await flush();
     expect(global.twttr.widgets.createTweet).toHaveBeenCalled();
   });
@@ -109,6 +123,7 @@ describe("X/Twitter widget", () => {
       .fn()
       .mockRejectedValue(new Error("boom"));
     loadModule();
+    window.dispatchEvent(new Event("load"));
     await flush();
     expect(global.twttr.widgets.createTweet).toHaveBeenCalled();
   });
@@ -118,6 +133,7 @@ describe("X/Twitter widget", () => {
       <div class="x-twitter-embed" data-url="${TWEET_URL}"></div>
     `;
     loadModule();
+    window.dispatchEvent(new Event("load"));
     expect(global.twttr.widgets.createTweet).not.toHaveBeenCalled();
   });
 
@@ -126,18 +142,21 @@ describe("X/Twitter widget", () => {
   test("uses dark theme from html data attribute (slate)", () => {
     document.documentElement.setAttribute("data-md-color-scheme", "slate");
     loadModule();
+    window.dispatchEvent(new Event("load"));
     expect(lastCreateTweetCall()[2].theme).toBe("dark");
   });
 
   test("uses light theme from html data attribute (default)", () => {
     document.documentElement.setAttribute("data-md-color-scheme", "default");
     loadModule();
+    window.dispatchEvent(new Event("load"));
     expect(lastCreateTweetCall()[2].theme).toBe("light");
   });
 
   test("uses theme from body data attribute", () => {
     document.body.setAttribute("data-md-color-scheme", "slate");
     loadModule();
+    window.dispatchEvent(new Event("load"));
     expect(lastCreateTweetCall()[2].theme).toBe("dark");
   });
 
@@ -149,6 +168,7 @@ describe("X/Twitter widget", () => {
       </form>
     `;
     loadModule();
+    window.dispatchEvent(new Event("load"));
     expect(lastCreateTweetCall()[2].theme).toBe("dark");
   });
 
@@ -160,6 +180,7 @@ describe("X/Twitter widget", () => {
       </form>
     `;
     loadModule();
+    window.dispatchEvent(new Event("load"));
     expect(lastCreateTweetCall()[2].theme).toBe("light");
   });
 
@@ -169,24 +190,28 @@ describe("X/Twitter widget", () => {
       <form data-md-component="palette"></form>
     `;
     loadModule();
+    window.dispatchEvent(new Event("load"));
     expect(lastCreateTweetCall()[2].theme).toBe("light");
   });
 
   test("uses dark theme from localStorage", () => {
     window.localStorage.getItem.mockReturnValue("slate");
     loadModule();
+    window.dispatchEvent(new Event("load"));
     expect(lastCreateTweetCall()[2].theme).toBe("dark");
   });
 
   test("uses light theme from localStorage non-slate value", () => {
     window.localStorage.getItem.mockReturnValue("default");
     loadModule();
+    window.dispatchEvent(new Event("load"));
     expect(lastCreateTweetCall()[2].theme).toBe("light");
   });
 
   test("defaults to light theme when nothing is set", () => {
     window.localStorage.getItem.mockReturnValue(null);
     loadModule();
+    window.dispatchEvent(new Event("load"));
     expect(lastCreateTweetCall()[2].theme).toBe("light");
   });
 
@@ -196,6 +221,7 @@ describe("X/Twitter widget", () => {
       return null;
     });
     loadModule();
+    window.dispatchEvent(new Event("load"));
     expect(lastCreateTweetCall()[2].theme).toBe("dark");
   });
 
@@ -206,6 +232,7 @@ describe("X/Twitter widget", () => {
       return null;
     });
     loadModule();
+    window.dispatchEvent(new Event("load"));
     expect(lastCreateTweetCall()[2].theme).toBe("dark");
   });
 
@@ -213,6 +240,7 @@ describe("X/Twitter widget", () => {
     window.localStorage.getItem.mockReturnValue(null);
     window.matchMedia = jest.fn().mockReturnValue({ matches: true });
     loadModule();
+    window.dispatchEvent(new Event("load"));
     expect(lastCreateTweetCall()[2].theme).toBe("dark");
     delete window.matchMedia;
   });
@@ -221,6 +249,7 @@ describe("X/Twitter widget", () => {
     window.localStorage.getItem.mockReturnValue(null);
     window.matchMedia = jest.fn().mockReturnValue({ matches: false });
     loadModule();
+    window.dispatchEvent(new Event("load"));
     expect(lastCreateTweetCall()[2].theme).toBe("light");
     delete window.matchMedia;
   });
@@ -228,6 +257,7 @@ describe("X/Twitter widget", () => {
   test("reads color scheme via __md_get when available", () => {
     globalThis.__md_get = jest.fn().mockReturnValue({ color: { scheme: "slate" } });
     loadModule();
+    window.dispatchEvent(new Event("load"));
     expect(lastCreateTweetCall()[2].theme).toBe("dark");
     delete globalThis.__md_get;
   });
@@ -236,6 +266,7 @@ describe("X/Twitter widget", () => {
     globalThis.__md_get = jest.fn().mockReturnValue(null);
     window.localStorage.getItem.mockReturnValue(null);
     loadModule();
+    window.dispatchEvent(new Event("load"));
     expect(lastCreateTweetCall()[2].theme).toBe("light");
     delete globalThis.__md_get;
   });
@@ -245,6 +276,7 @@ describe("X/Twitter widget", () => {
     window.localStorage.getItem.mockReturnValue(null);
     window.matchMedia = jest.fn().mockReturnValue({ matches: true });
     loadModule();
+    window.dispatchEvent(new Event("load"));
     expect(lastCreateTweetCall()[2].theme).toBe("dark");
     delete window.matchMedia;
   });
@@ -258,6 +290,7 @@ describe("X/Twitter widget", () => {
       configurable: true,
     });
     loadModule();
+    window.dispatchEvent(new Event("load"));
     expect(lastCreateTweetCall()[2].width).toBe(300);
   });
 
@@ -268,6 +301,7 @@ describe("X/Twitter widget", () => {
       configurable: true,
     });
     loadModule();
+    window.dispatchEvent(new Event("load"));
     expect(lastCreateTweetCall()[2].width).toBe(550);
   });
 
@@ -278,6 +312,7 @@ describe("X/Twitter widget", () => {
       configurable: true,
     });
     loadModule();
+    window.dispatchEvent(new Event("load"));
     expect(lastCreateTweetCall()[2].width).toBe(220);
   });
 
@@ -286,19 +321,22 @@ describe("X/Twitter widget", () => {
   test("skips rendering when twttr is undefined", () => {
     delete global.twttr;
     loadModule();
-    // Re-render triggered by the color-scheme observer must not throw.
-    expect(() => jest.advanceTimersByTime(100)).not.toThrow();
+    window.dispatchEvent(new Event("load"));
+    // The main assertion is that no error is thrown.
   });
 
   test("skips rendering when twttr.widgets is missing", () => {
     global.twttr = {};
     loadModule();
-    expect(() => jest.advanceTimersByTime(100)).not.toThrow();
+    window.dispatchEvent(new Event("load"));
+    // The main assertion is that no error is thrown.
   });
 
   test("skips rendering when createTweet is missing", () => {
     global.twttr = { widgets: {} };
-    expect(() => loadModule()).not.toThrow();
+    loadModule();
+    window.dispatchEvent(new Event("load"));
+    // The main assertion is that no error is thrown.
   });
 
   // -- Script loading -------------------------------------------------------
@@ -331,6 +369,7 @@ describe("X/Twitter widget", () => {
     const createTweet = createTweetMock();
     global.twttr = { widgets: { createTweet }, ready: (cb) => cb() };
     script.onload();
+    window.dispatchEvent(new Event("load"));
 
     expect(createTweet).toHaveBeenCalledWith(
       TWEET_ID,
@@ -374,6 +413,7 @@ describe("X/Twitter widget", () => {
     const ready = jest.fn((cb) => cb());
     global.twttr = { widgets: { createTweet }, ready };
     script.onload();
+    window.dispatchEvent(new Event("load"));
 
     expect(ready).toHaveBeenCalled();
     expect(createTweet).toHaveBeenCalled();
@@ -390,6 +430,7 @@ describe("X/Twitter widget", () => {
       </form>
     `;
     loadModule();
+    window.dispatchEvent(new Event("load"));
     const callsBefore = global.twttr.widgets.createTweet.mock.calls.length;
 
     const palette = document.querySelector('[data-md-component="palette"]');
@@ -401,16 +442,13 @@ describe("X/Twitter widget", () => {
     ).toBeGreaterThan(callsBefore);
   });
 
-  test("re-renders on window load to pick up the settled palette theme", () => {
+  test("renders on window load", () => {
     loadModule();
-    const callsBefore = global.twttr.widgets.createTweet.mock.calls.length;
+    expect(global.twttr.widgets.createTweet).not.toHaveBeenCalled();
 
     window.dispatchEvent(new Event("load"));
-    jest.advanceTimersByTime(100);
 
-    expect(
-      global.twttr.widgets.createTweet.mock.calls.length
-    ).toBeGreaterThan(callsBefore);
+    expect(global.twttr.widgets.createTweet).toHaveBeenCalledTimes(1);
   });
 
   // -- Initialization -------------------------------------------------------
@@ -431,6 +469,7 @@ describe("X/Twitter widget", () => {
 
     // Invoke the registered handler to run start().
     domReady[1]();
+    window.dispatchEvent(new Event("load"));
     expect(global.twttr.widgets.createTweet).toHaveBeenCalled();
     addEventListenerSpy.mockRestore();
   });

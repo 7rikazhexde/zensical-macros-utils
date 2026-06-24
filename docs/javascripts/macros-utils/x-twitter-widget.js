@@ -212,10 +212,16 @@
    * Uses a preconnect hint to speed up the initial connection.
    * @param {Function} onReady - Callback to run once widgets are available.
    */
-  function loadWidgetScript(onReady) {
+  function loadWidgetScript() {
+    // If the script is already loaded and ready, do nothing.
     if (window.twttr && window.twttr.widgets) {
       log("Twitter widgets already available");
-      whenReady(onReady);
+      return;
+    }
+
+    // Avoid injecting the script twice.
+    if (document.querySelector(`script[src="${TWITTER_SCRIPT_SRC}"]`)) {
+      log("Twitter script already loading");
       return;
     }
 
@@ -228,10 +234,6 @@
     const script = document.createElement("script");
     script.src = TWITTER_SCRIPT_SRC;
     script.async = true;
-    script.onload = () => {
-      log("Twitter script loaded");
-      whenReady(onReady);
-    };
     script.onerror = (err) => log("Failed to load Twitter script:", err);
     document.head.appendChild(script);
   }
@@ -273,14 +275,17 @@
   /**
    * Set up observers and trigger the initial render.
    *
-   * The window 'load' listener re-renders after the full page (including
-   * zensical's palette JS) has settled, so the correct theme is picked up
-   * even if the initial render ran before the palette radio was set.
+   * The window 'load' listener renders after the full page (including
+   * zensical's palette JS) has settled, so the correct theme is picked up.
    */
   function start() {
     setupColorSchemeObserver();
-    loadWidgetScript(renderAllTweets);
-    window.addEventListener("load", debounce(renderAllTweets, 100));
+    // Load the script but don't render yet.
+    loadWidgetScript();
+    // Render only on window.load, ensuring all assets and scripts are ready.
+    window.addEventListener("load", () => {
+      whenReady(renderAllTweets);
+    });
   }
 
   /**

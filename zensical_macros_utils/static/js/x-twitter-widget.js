@@ -210,12 +210,10 @@
   /**
    * Ensure the Twitter widgets script is loaded, then run the callback.
    * Uses a preconnect hint to speed up the initial connection.
-   * @param {Function} onReady - Callback to run once widgets are available.
    */
-  function loadWidgetScript(onReady) {
-    if (window.twttr && window.twttr.widgets) {
-      log("Twitter widgets already available");
-      whenReady(onReady);
+  function loadWidgetScript() {
+    if (document.querySelector(`script[src="${TWITTER_SCRIPT_SRC}"]`)) {
+      log("Twitter script already loading or loaded");
       return;
     }
 
@@ -229,8 +227,8 @@
     script.src = TWITTER_SCRIPT_SRC;
     script.async = true;
     script.onload = () => {
-      log("Twitter script loaded");
-      whenReady(onReady);
+      log("Twitter script loaded, rendering tweets");
+      whenReady(renderAllTweets);
     };
     script.onerror = (err) => log("Failed to load Twitter script:", err);
     document.head.appendChild(script);
@@ -273,20 +271,25 @@
   /**
    * Set up observers and trigger the initial render.
    *
-   * The window 'load' listener re-renders after the full page (including
-   * zensical's palette JS) has settled, so the correct theme is picked up
-   * even if the initial render ran before the palette radio was set.
+   * The window 'load' listener renders after the full page (including
+   * zensical's palette JS) has settled, so the correct theme is picked up.
    */
   function start() {
     setupColorSchemeObserver();
-    loadWidgetScript(renderAllTweets);
-    window.addEventListener("load", debounce(renderAllTweets, 100));
+    if (!(window.twttr && window.twttr.widgets)) {
+      loadWidgetScript();
+    }
+    window.addEventListener("load", () => whenReady(renderAllTweets));
   }
 
   /**
    * Entry point: wait for the DOM if necessary, then start.
    */
+  let initialized = false;
   function initialize() {
+    if (initialized) return;
+    initialized = true;
+
     log("Starting initialization");
     if (document.readyState === "loading") {
       log("Document still loading, waiting for DOMContentLoaded");

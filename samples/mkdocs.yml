@@ -1,0 +1,114 @@
+# Sample configuration for zensical-macros-utils (mkdocs.yml format)
+#
+# Use this file as a starting point when configuring with mkdocs.yml instead
+# of zensical.toml. If zensical.toml exists in the project root, it takes
+# priority over this file.
+# Remove comments as needed before using in your own project.
+
+site_name: "Zensical Macros Utils Documentation"
+site_description: "Documentation and examples for zensical-macros-utils"
+site_url: "https://7rikazhexde.github.io/zensical-macros-utils/"
+site_author: "7rikazhexde"
+repo_name: "7rikazhexde/zensical-macros-utils"
+repo_url: "https://github.com/7rikazhexde/zensical-macros-utils/"
+copyright: "&copy; 2025 7rikazhexde"
+
+# CSS and JS files automatically copied by zensical_macros_utils on first build
+extra_css:
+  - stylesheets/macros-utils/link-card.css
+  - stylesheets/macros-utils/gist-cb.css
+  - stylesheets/macros-utils/x-twitter-link-card.css
+
+extra_javascript:
+  - javascripts/macros-utils/x-twitter-widget.js
+
+nav:
+  - Home: index.md
+  - Examples:
+      - examples/index.md
+      - Link Card: examples/link-card-macro.md
+      - Gist Code Block: examples/gist-codeblock-macro.md
+      - X/Twitter Card: examples/x-twitter-card-macro.md
+
+# ----------------------------------------------------------------------------
+# Theme (Material for MkDocs)
+# variant: classic uses the traditional Roboto font stack.
+# Omitting variant (or setting it to "modern") uses zensical's new design
+# with Inter/JetBrains Mono fonts and Lucide icons.
+# ----------------------------------------------------------------------------
+theme:
+  name: material
+  custom_dir: overrides
+  variant: classic
+  features:
+    - content.code.copy
+    - content.code.select
+    - content.code.annotate
+    - navigation.indexes
+    - navigation.sections
+    - navigation.top
+    - navigation.footer
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: teal
+      accent: teal
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: teal
+      accent: teal
+      toggle:
+        icon: material/weather-night
+        name: Switch to light mode
+
+# ----------------------------------------------------------------------------
+# Plugins
+# Load zensical_macros_utils via the macros plugin.
+# ----------------------------------------------------------------------------
+plugins:
+  - search
+  - macros:
+      modules:
+        - zensical_macros_utils
+
+# ----------------------------------------------------------------------------
+# Extra
+# Set extra.debug flags to true to enable per-macro debug logging.
+# ----------------------------------------------------------------------------
+extra:
+  social:
+    - icon: fontawesome/brands/github-alt
+      link: https://github.com/7rikazhexde
+    - icon: fontawesome/brands/twitter
+      link: https://twitter.com/tw_7rikazhexde
+    - icon: fontawesome/solid/blog
+      link: https://7rikazhexde-pkm-obsidian-mkdocs.netlify.app
+  consent:
+    title: Cookie consent
+    description: >-
+      This site uses Google Analytics and cookies to collect visitor data.
+      The collected data helps me understand site usage and improve the documentation.
+      By clicking "Accept", you consent to the use of cookies for these purposes.
+  analytics:
+    provider: google
+    property: G-MFRRFBKM3H
+    feedback:
+      title: Was this page helpful?
+      ratings:
+        - icon: material/thumb-up-outline
+          name: This page was helpful
+          data: 1
+          note: Thank you for your feedback!
+        - icon: material/thumb-down-outline
+          name: This page could be improved
+          data: 0
+          note: >-
+            Thank you for your feedback!<br>
+            Please feel free to reach out via Twitter for any suggestions or improvements.
+  debug:
+    link_card: false
+    gist_codeblock: false
+    x_twitter_card: false

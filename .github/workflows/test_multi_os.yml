@@ -10,6 +10,10 @@ on:
       - 'pyproject.toml'
       - 'uv.lock'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   set_variables:
     if: ( !startsWith(github.event.head_commit.message, 'Bump version') && !startsWith(github.event.head_commit.message, '[skip ci]') )
@@ -80,12 +84,6 @@ jobs:
           echo "System date: $(date)"
           echo "TZ environment variable: ${TZ}"
           python -c "import datetime, platform; print(f'Python timezone: {datetime.datetime.now().astimezone().tzinfo}'); print(f'OS: {platform.system()}')"
-      - name: Set up Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          toolchain: stable
-      - name: Install Just
-        run: cargo install just
       - name: Install uv
         uses: astral-sh/setup-uv@v7
         with:
@@ -94,7 +92,7 @@ jobs:
         run: uv sync
       - name: Run test
         id: pytest
-        run: just test-ci-xml
+        run: uv run python scripts/run_tests.py --report xml
       - name: Pytest coverage comment
         id: coverageComment
         uses: MishaKav/pytest-coverage-comment@v1.7.2

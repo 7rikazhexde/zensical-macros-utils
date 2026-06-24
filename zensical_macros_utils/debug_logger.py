@@ -2,8 +2,9 @@
 Zensical macros debug logger module
 """
 
+from __future__ import annotations
+
 import logging
-from typing import Optional, Any, Dict
 from zensical.extensions.macros import MacroEnv
 
 
@@ -16,7 +17,7 @@ class DebugLogger:
 
     @classmethod
     def create_logger(
-        cls, module_name: str, env: Optional[MacroEnv] = None
+        cls, module_name: str, env: MacroEnv | None = None
     ) -> "DebugLogger":
         """
         Create loggers based on preferences
@@ -37,7 +38,7 @@ class DebugLogger:
         return cls(module_name, module_debug)
 
     @classmethod
-    def _get_debug_config(cls, env: Optional[MacroEnv] = None) -> Dict[str, bool]:
+    def _get_debug_config(cls, env: MacroEnv | None = None) -> dict[str, bool]:
         """
         Get debug settings
 
@@ -71,13 +72,13 @@ class DebugLogger:
         self.logger.setLevel(logging.DEBUG if enabled else logging.WARNING)
         self.enabled = enabled
 
-    def log(self, message: str, data: Optional[Any] = None) -> None:
+    def log(self, message: str, data: object | None = None) -> None:
         """
         Output debugging information
 
         Args: Outputs debugging information.
             message (str): log message
-            data (Optional[Any], optional): additional log data. Defaults to None.
+            data (object | None, optional): additional log data. Defaults to None.
         """
         if not self.enabled:
             return

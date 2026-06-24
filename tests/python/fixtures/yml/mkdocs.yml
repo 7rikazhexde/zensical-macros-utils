@@ -1,0 +1,7 @@
+site_name: "Test Site (yml)"
+site_url: "https://example.com/"
+extra:
+  debug:
+    link_card: false
+    gist_codeblock: false
+    x_twitter_card: false

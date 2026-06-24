@@ -3,7 +3,7 @@ Common test configurations and fixtures for MkDocs Macros Utils tests.
 This module provides shared test utilities including mock classes and fixtures.
 """
 
-from typing import Any, Callable, Dict, List, Optional, Type
+from typing import Any, Callable, Dict, List, Optional, Type, cast
 import pytest
 from pytest import Config
 from zensical_macros_utils.debug_logger import DebugLogger
@@ -84,7 +84,7 @@ def env() -> MockMacroEnv:
         MockMacroEnv: A configured mock env with gist_codeblock macro registered
     """
     plugin = MockMacroEnv()
-    define_env(plugin)
+    define_env(cast(Any, plugin))
     return plugin
 
 

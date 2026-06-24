@@ -33,7 +33,9 @@ description:
 
 ### Config settings
 
-1. Add the extension to your `zensical.toml`
+Add the extension to your config file. If both `zensical.toml` and `mkdocs.yml` exist, `zensical.toml` takes priority.
+
+=== "zensical.toml"
 
     ```toml
     extra_css = [
@@ -55,11 +57,39 @@ description:
     x_twitter_card = false
     ```
 
-1. Start the development server
+=== "mkdocs.yml / mkdocs.yaml"
 
-    ```bash
-    uv run zensical serve
+    ```yaml
+    extra_css:
+      - stylesheets/macros-utils/link-card.css
+      - stylesheets/macros-utils/gist-cb.css
+      - stylesheets/macros-utils/x-twitter-link-card.css
+
+    extra_javascript:
+      - javascripts/macros-utils/x-twitter-widget.js
+
+    theme:
+      name: material
+      variant: classic  # omit or set "modern" to use zensical's new design
+
+    plugins:
+      - search
+      - macros:
+          modules:
+            - zensical_macros_utils
+
+    extra:
+      debug:
+        link_card: false
+        gist_codeblock: false
+        x_twitter_card: false
     ```
+
+Start the development server:
+
+```bash
+uv run zensical serve
+```
 
 The plugin will automatically create the required directories and copy CSS/JS files during the build process.
 

@@ -52,14 +52,28 @@ no_implicit_optional = true
 warn_return_any = true
 warn_unused_ignores = true
 warn_redundant_casts = true
+# Ban the explicit `Any` type and bare/implicit-Any generics in the package.
+disallow_any_explicit = true
+disallow_any_generics = true
 
 [[tool.mypy.overrides]]
 module = ["zensical.*","jinja2.*","ruamel.*","pygments.*","yaml.*"]
 ignore_missing_imports = true
 
+# The test suite needs Any for its mock framework; keep strictness on the
+# production package only.
+[[tool.mypy.overrides]]
+module = ["tests.*"]
+disallow_any_explicit = false
+disallow_any_generics = false
+
 # Coverage configuration
 [tool.coverage.run]
 omit = ["tests/*", "scripts/*", "docs/*"]
+
+[tool.coverage.report]
+fail_under = 100
+show_missing = true
 
 # Test configuration
 [tool.pytest.ini_options]

@@ -2,7 +2,8 @@
 Zensical macros module for fetching and displaying Gist code blocks.
 """
 
-from typing import Optional, Tuple, Dict
+from __future__ import annotations
+
 import re
 import requests
 from zensical.extensions.macros import MacroEnv
@@ -19,7 +20,7 @@ class GistProcessor:
     def __init__(self, logger: DebugLogger) -> None:
         self.logger = logger
         # Language and extension mappings
-        self.lang_map: Dict[str, str] = {
+        self.lang_map: dict[str, str] = {
             # Extension-based mappings
             ".sh": "bash",
             ".py": "python",
@@ -49,9 +50,7 @@ class GistProcessor:
             ".psd1": "powershell",
         }
 
-    def get_gist_info(
-        self, gist_url: str
-    ) -> Tuple[Optional[str], Optional[str], Optional[str]]:
+    def get_gist_info(self, gist_url: str) -> tuple[str | None, str | None, str | None]:
         """Get raw URL and metadata from Gist URL"""
         self.logger.log("Processing URL", gist_url)
 
@@ -113,7 +112,7 @@ class GistProcessor:
         return detected_lang
 
     def detect_language_from_content(
-        self, content: str, filename: Optional[str] = None
+        self, content: str, filename: str | None = None
     ) -> str:
         """Detect language from content"""
         # First try to detect language from filename
@@ -164,7 +163,7 @@ class GistProcessor:
         pygments_name = pygments_name.lower()
         return lang_map.get(pygments_name, "text")
 
-    def fetch_gist_content(self, url: str) -> Tuple[Optional[str], Optional[str]]:
+    def fetch_gist_content(self, url: str) -> tuple[str | None, str | None]:
         """Fetch content from raw Gist URL"""
         self.logger.log("Fetching content from", url)
 
@@ -195,9 +194,7 @@ def define_env(env: MacroEnv) -> None:
     processor = GistProcessor(logger)
 
     @env.macro
-    def gist_codeblock(
-        gist_url: str, indent: int = 0, ext: Optional[str] = None
-    ) -> str:
+    def gist_codeblock(gist_url: str, indent: int = 0, ext: str | None = None) -> str:
         """Macro to generate code block from Gist"""
         logger.log("\n=== Starting new Gist processing ===")
         logger.log("Input parameters", f"URL={gist_url}, indent={indent}, ext={ext}")

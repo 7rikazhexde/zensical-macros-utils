@@ -9,6 +9,7 @@ import pytest
 from zensical_macros_utils.x_twitter_card import (
     validate_x_twitter_url,
     standardize_twitter_url,
+    extract_tweet_id,
     create_x_twitter_card,
     define_env,
 )
@@ -81,6 +82,26 @@ def test_standardize_twitter_url(mock_logger: DebugLogger) -> None:
         assert result == expected_url, f"Failed for input: {input_url}"
 
 
+# -- Tweet ID Extraction Tests ------------------------------
+
+
+def test_extract_tweet_id_valid() -> None:
+    """Test tweet id extraction from valid X/Twitter URLs"""
+    cases = [
+        ("https://twitter.com/user/status/123456789", "123456789"),
+        ("https://mobile.x.com/user/status/987654321", "987654321"),
+        ("http://x.com/user/status/42", "42"),
+    ]
+    for url, expected in cases:
+        assert extract_tweet_id(url) == expected
+
+
+def test_extract_tweet_id_invalid() -> None:
+    """Test tweet id extraction returns None for non-tweet URLs"""
+    assert extract_tweet_id("https://example.com") is None
+    assert extract_tweet_id("https://twitter.com/user") is None
+
+
 # -- Card Creation Tests ------------------------------
 
 
@@ -90,9 +111,9 @@ def test_create_x_twitter_card_valid_url(mock_env: MockMacroEnv) -> None:
     result = create_x_twitter_card(url, mock_env)
 
     assert '<div class="x-twitter-embed"' in result
-    assert '<blockquote class="twitter-tweet"' in result
     assert f'data-url="{url}"' in result
-    assert f'<a href="{url}"></a>' in result
+    assert 'data-tweet-id="123456789"' in result
+    assert f'<noscript><a href="{url}">{url}</a></noscript>' in result
 
 
 def test_create_x_twitter_card_standardize_url(mock_env: MockMacroEnv) -> None:
@@ -103,7 +124,7 @@ def test_create_x_twitter_card_standardize_url(mock_env: MockMacroEnv) -> None:
     result = create_x_twitter_card(x_url, mock_env)
 
     assert f'data-url="{twitter_url}"' in result
-    assert f'<a href="{twitter_url}"></a>' in result
+    assert 'data-tweet-id="123456789"' in result
 
 
 def test_create_x_twitter_card_invalid_url(mock_env: MockMacroEnv) -> None:
@@ -118,8 +139,8 @@ def test_create_x_twitter_card_no_env() -> None:
     result = create_x_twitter_card(url)
 
     assert '<div class="x-twitter-embed"' in result
-    assert '<blockquote class="twitter-tweet"' in result
     assert f'data-url="{url}"' in result
+    assert 'data-tweet-id="123456789"' in result
 
 
 # -- Environment and Macro Tests ------------------------------
@@ -143,5 +164,5 @@ def test_x_twitter_card_macro() -> None:
     result = env.x_twitter_card(url)
 
     assert '<div class="x-twitter-embed"' in result
-    assert '<blockquote class="twitter-tweet"' in result
+    assert 'data-tweet-id="123456789"' in result
     assert f'data-url="{url}"' in result

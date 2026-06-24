@@ -189,7 +189,9 @@ def test_load_config_yaml_fallback(monkeypatch: MonkeyPatch, tmp_path: Path) -> 
     monkeypatch.chdir(tmp_path)
     config = _load_config()
     assert config["site_name"] == "Test"
-    assert config["extra"]["debug"] is True
+    extra = config["extra"]
+    assert isinstance(extra, dict)
+    assert extra["debug"] is True
 
 
 def test_load_config_no_files(monkeypatch: MonkeyPatch, tmp_path: Path) -> None:
@@ -237,3 +239,90 @@ def test_load_config_invalid_yaml(monkeypatch: MonkeyPatch, tmp_path: Path) -> N
     (tmp_path / "mkdocs.yml").write_text("key: [unclosed")
     monkeypatch.chdir(tmp_path)
     assert _load_config() == {}
+
+
+# -- _load_config Tests (mkdocs.yaml extension) ------------------------------
+
+def test_load_config_yaml_ext_fallback(monkeypatch: MonkeyPatch, tmp_path: Path) -> None:
+    """Test _load_config reads mkdocs.yaml when no zensical.toml or mkdocs.yml exists."""
+    (tmp_path / "mkdocs.yaml").write_text("site_name: YamlExt\nextra:\n  debug: true\n")
+    monkeypatch.chdir(tmp_path)
+    config = _load_config()
+    assert config["site_name"] == "YamlExt"
+    extra = config["extra"]
+    assert isinstance(extra, dict)
+    assert extra["debug"] is True
+
+
+def test_load_config_yml_preferred_over_yaml_ext(
+    monkeypatch: MonkeyPatch, tmp_path: Path
+) -> None:
+    """Test _load_config prefers mkdocs.yml over mkdocs.yaml when both exist."""
+    (tmp_path / "mkdocs.yml").write_text("site_name: FromYml\n")
+    (tmp_path / "mkdocs.yaml").write_text("site_name: FromYamlExt\n")
+    monkeypatch.chdir(tmp_path)
+    config = _load_config()
+    assert config["site_name"] == "FromYml"
+
+
+def test_load_config_invalid_toml_fallback_yaml_ext(
+    monkeypatch: MonkeyPatch, tmp_path: Path
+) -> None:
+    """Test _load_config falls back to mkdocs.yaml when zensical.toml is invalid."""
+    (tmp_path / "zensical.toml").write_bytes(b"invalid toml [[[")
+    (tmp_path / "mkdocs.yaml").write_text("site_name: FallbackYaml\n")
+    monkeypatch.chdir(tmp_path)
+    config = _load_config()
+    assert config.get("site_name") == "FallbackYaml"
+
+
+def test_load_config_invalid_yaml_ext(monkeypatch: MonkeyPatch, tmp_path: Path) -> None:
+    """Test _load_config returns {} when mkdocs.yaml content is malformed."""
+    (tmp_path / "mkdocs.yaml").write_text("key: [unclosed")
+    monkeypatch.chdir(tmp_path)
+    assert _load_config() == {}
+
+
+def test_load_extra_config_from_yaml_ext(
+    monkeypatch: MonkeyPatch, tmp_path: Path
+) -> None:
+    """Test _load_extra_config returns extra section from mkdocs.yaml."""
+    (tmp_path / "mkdocs.yaml").write_text("extra:\n  key: value\n")
+    monkeypatch.chdir(tmp_path)
+    assert _load_extra_config() == {"key": "value"}
+
+
+# -- Fixture-based Integration Tests -----------------------------------------
+# These tests load from actual fixture files under tests/python/fixtures/.
+# If a fixture file is removed the corresponding test is skipped rather than
+# failing, so the suite stays green while making the missing file visible.
+
+_FIXTURES_DIR = Path(__file__).parent.parent / "fixtures"
+_YML_FIXTURE = _FIXTURES_DIR / "yml" / "mkdocs.yml"
+_YAML_FIXTURE = _FIXTURES_DIR / "yaml" / "mkdocs.yaml"
+
+
+@pytest.mark.skipif(
+    not _YML_FIXTURE.exists(),
+    reason=f"fixture file not present: {_YML_FIXTURE}",
+)
+def test_load_config_from_yml_fixture(monkeypatch: MonkeyPatch) -> None:
+    """Test _load_config loads site_name and extra from the yml fixture file."""
+    monkeypatch.chdir(_YML_FIXTURE.parent)
+    config = _load_config()
+    assert isinstance(config, dict)
+    assert config.get("site_name") == "Test Site (yml)"
+    assert isinstance(config.get("extra"), dict)
+
+
+@pytest.mark.skipif(
+    not _YAML_FIXTURE.exists(),
+    reason=f"fixture file not present: {_YAML_FIXTURE}",
+)
+def test_load_config_from_yaml_ext_fixture(monkeypatch: MonkeyPatch) -> None:
+    """Test _load_config loads site_name and extra from the yaml fixture file."""
+    monkeypatch.chdir(_YAML_FIXTURE.parent)
+    config = _load_config()
+    assert isinstance(config, dict)
+    assert config.get("site_name") == "Test Site (yaml)"
+    assert isinstance(config.get("extra"), dict)

@@ -1,8 +1,9 @@
-# zensical-macros-utils サンプル設定ファイル (mkdocs.yml 形式)
+# Sample configuration for zensical-macros-utils (mkdocs.yml format)
 #
-# このファイルは zensical.toml の代わりに mkdocs.yml で設定する場合のサンプルです。
-# プロジェクトルートに zensical.toml が存在する場合はそちらが優先されます。
-# 実際に使用する際は不要なコメントを削除してください。
+# Use this file as a starting point when configuring with mkdocs.yml instead
+# of zensical.toml. If zensical.toml exists in the project root, it takes
+# priority over this file.
+# Remove comments as needed before using in your own project.
 
 site_name: "Zensical Macros Utils Documentation"
 site_description: "Documentation and examples for zensical-macros-utils"
@@ -12,7 +13,7 @@ repo_name: "7rikazhexde/zensical-macros-utils"
 repo_url: "https://github.com/7rikazhexde/zensical-macros-utils/"
 copyright: "&copy; 2025 7rikazhexde"
 
-# zensical_macros_utils が自動コピーする CSS/JS を extra_css / extra_javascript に追加する
+# CSS and JS files automatically copied by zensical_macros_utils on first build
 extra_css:
   - stylesheets/macros-utils/link-card.css
   - stylesheets/macros-utils/gist-cb.css
@@ -30,8 +31,8 @@ nav:
       - X/Twitter Card: examples/x-twitter-card-macro.md
 
 # ----------------------------------------------------------------------------
-# テーマ設定 (Material for MkDocs)
-# zensical を使用する場合は variant: classic がデフォルト
+# Theme (Material for MkDocs)
+# When using zensical, variant: classic is the default.
 # ----------------------------------------------------------------------------
 theme:
   name: material
@@ -61,8 +62,8 @@ theme:
         name: Switch to light mode
 
 # ----------------------------------------------------------------------------
-# プラグイン設定
-# macros プラグインで zensical_macros_utils を読み込む
+# Plugins
+# Load zensical_macros_utils via the macros plugin.
 # ----------------------------------------------------------------------------
 plugins:
   - search
@@ -71,8 +72,8 @@ plugins:
         - zensical_macros_utils
 
 # ----------------------------------------------------------------------------
-# extra 設定
-# extra.debug で各マクロのデバッグログを有効化できる
+# Extra
+# Set extra.debug flags to true to enable per-macro debug logging.
 # ----------------------------------------------------------------------------
 extra:
   social:

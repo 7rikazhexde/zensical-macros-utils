@@ -290,7 +290,6 @@
     setupColorSchemeObserver();
     setupResizeHandler();
     loadWidgetScript(renderAllTweets);
-    window.addEventListener("load", renderAllTweets);
   }
 
   /**

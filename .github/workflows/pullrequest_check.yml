@@ -26,6 +26,10 @@ on:
     branches:
       - main
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   set_variables:
     if: github.actor != 'dependabot[bot]' && !startsWith(github.event.pull_request.title, 'Bump version')
@@ -108,12 +112,6 @@ jobs:
           echo "System date: $(date)"
           echo "TZ environment variable: ${TZ}"
           python -c "import datetime, platform; print(f'Python timezone: {datetime.datetime.now().astimezone().tzinfo}'); print(f'OS: {platform.system()}')"
-      - name: Set up Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          toolchain: stable
-      - name: Install Just
-        run: cargo install just
       - name: Install uv
         uses: astral-sh/setup-uv@v7
         with:
@@ -124,18 +122,18 @@ jobs:
         id: pytest
         shell: bash
         run: |
-          just test-ci-xml
+          uv run python scripts/run_tests.py --report xml
           coverage_percentage=$(uv run coverage report | grep TOTAL | awk '{print $NF}' | sed 's/%//')
           echo "Current coverage: ${coverage_percentage}%"
           echo "COVERAGE=${coverage_percentage}" >> "$GITHUB_ENV"
       - name: Check coverage
         shell: bash
         run: |
-          if [ "${COVERAGE}" -lt 90 ]; then
-            echo "Test coverage is below 90%. Current coverage: ${COVERAGE}%"
+          if [ "${COVERAGE}" -lt 100 ]; then
+            echo "Test coverage is below 100%. Current coverage: ${COVERAGE}%"
             exit 1
           else
-            echo "Test coverage is above or equal to 90%. Current coverage: ${COVERAGE}%"
+            echo "Test coverage is 100%. Current coverage: ${COVERAGE}%"
           fi
       - name: Pytest coverage comment
         id: coverageComment

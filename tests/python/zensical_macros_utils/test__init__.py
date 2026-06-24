@@ -189,7 +189,9 @@ def test_load_config_yaml_fallback(monkeypatch: MonkeyPatch, tmp_path: Path) -> 
     monkeypatch.chdir(tmp_path)
     config = _load_config()
     assert config["site_name"] == "Test"
-    assert config["extra"]["debug"] is True
+    extra = config["extra"]
+    assert isinstance(extra, dict)
+    assert extra["debug"] is True
 
 
 def test_load_config_no_files(monkeypatch: MonkeyPatch, tmp_path: Path) -> None:

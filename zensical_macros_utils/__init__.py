@@ -2,107 +2,38 @@
 Zensical macros module for enhanced documentation components.
 """
 
+from __future__ import annotations
+
 import logging
-import os
-import shutil
 from pathlib import Path
-from typing import Any, Dict
 
 from zensical.extensions.macros import MacroEnv
 
 from . import gist_codeblock
 from . import link_card
 from . import x_twitter_card
+from .common import (
+    MACROS_UTILS_CSS,
+    MACROS_UTILS_DIR,
+    MACROS_UTILS_JS,
+    copy_static_files,
+)
+from .common import get_docs_dir as _get_docs_dir
+from .common import load_config as _load_config
+from .common import load_extra_config as _load_extra_config
 
 logger = logging.getLogger("zensical.macros-utils")
 
-MACROS_UTILS_DIR = "stylesheets/macros-utils"
-MACROS_UTILS_CSS = ["link-card.css", "gist-cb.css", "x-twitter-link-card.css"]
-MACROS_UTILS_JS = ["x-twitter-widget.js"]
-
-
-def copy_static_files(plugin_dir: Path, docs_dir: Path) -> None:
-    """
-    静的ファイル（CSS、JS）を指定のディレクトリにコピーする
-
-    Args:
-        plugin_dir (Path): プラグインのディレクトリ
-        docs_dir (Path): ドキュメントのディレクトリ
-    """
-    css_dest = docs_dir / MACROS_UTILS_DIR
-    css_dest.mkdir(parents=True, exist_ok=True)
-
-    js_dest = docs_dir / "javascripts" / "macros-utils"
-    js_dest.mkdir(parents=True, exist_ok=True)
-
-    for css_file in MACROS_UTILS_CSS:
-        css_src = plugin_dir / "static" / "css" / css_file
-        css_dest_path = css_dest / css_file
-        if css_src.exists() and (
-            not css_dest_path.exists()
-            or os.path.getmtime(css_src) > os.path.getmtime(css_dest_path)
-        ):
-            shutil.copy2(css_src, css_dest_path)
-            logger.info(f"Copied static CSS file: {css_file}")
-
-    for js_file in MACROS_UTILS_JS:
-        js_src = plugin_dir / "static" / "js" / js_file
-        js_dest_path = js_dest / js_file
-        if js_src.exists() and (
-            not js_dest_path.exists()
-            or os.path.getmtime(js_src) > os.path.getmtime(js_dest_path)
-        ):
-            shutil.copy2(js_src, js_dest_path)
-            logger.info(f"Copied static JS file: {js_file}")
-
-
-def _get_docs_dir() -> Path:
-    """Return the docs directory path.
-
-    Checks MACROS_UTILS_DOCS_DIR env var first, then defaults to 'docs' relative to CWD.
-    """
-    docs_dir_env = os.environ.get("MACROS_UTILS_DOCS_DIR", "docs")
-    path = Path(docs_dir_env)
-    if not path.is_absolute():
-        path = Path(os.getcwd()) / path
-    return path
-
-
-def _load_config() -> Dict[str, Any]:
-    """Load full config from zensical.toml or mkdocs.yml in CWD if available."""
-    cwd = Path(os.getcwd())
-
-    # Try zensical.toml first (TOML format, [project] section)
-    toml_path = cwd / "zensical.toml"
-    if toml_path.exists():
-        try:
-            try:
-                import tomllib
-            except ImportError:
-                import tomli as tomllib  # type: ignore[no-redef]
-            with open(toml_path, "rb") as f:
-                data = tomllib.load(f)
-            return dict(data.get("project", data))
-        except Exception:
-            pass
-
-    # Fall back to mkdocs.yml / mkdocs.yaml (YAML format)
-    for config_name in ("mkdocs.yml", "mkdocs.yaml"):
-        config_path = cwd / config_name
-        if config_path.exists():
-            try:
-                import yaml
-
-                with open(config_path) as f:
-                    return dict(yaml.safe_load(f) or {})
-            except Exception:
-                pass
-    return {}
-
-
-def _load_extra_config() -> Dict[str, Any]:
-    """Load extra settings from mkdocs.yml or zensical config in CWD if available."""
-    return dict(_load_config().get("extra", {}))
+__all__ = [
+    "MACROS_UTILS_CSS",
+    "MACROS_UTILS_DIR",
+    "MACROS_UTILS_JS",
+    "copy_static_files",
+    "define_env",
+    "_get_docs_dir",
+    "_load_config",
+    "_load_extra_config",
+]
 
 
 def define_env(env: MacroEnv) -> None:
@@ -116,7 +47,8 @@ def define_env(env: MacroEnv) -> None:
 
         # Make config values available to sub-modules via env.variables
         config = _load_config()
-        extra = dict(config.get("extra", {}))
+        raw_extra = config.get("extra", {})
+        extra = raw_extra if isinstance(raw_extra, dict) else {}
         if extra:
             env.variables["extra"] = extra
         site_url = str(config.get("site_url", ""))

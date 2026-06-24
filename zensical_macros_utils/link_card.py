@@ -2,7 +2,8 @@
 Zensical macros module for displaying custom link cards.
 """
 
-from typing import Optional
+from __future__ import annotations
+
 from urllib.parse import urlparse
 import requests
 from zensical.extensions.macros import MacroEnv
@@ -13,7 +14,7 @@ from .debug_logger import DebugLogger
 
 def get_gist_content(
     user_id: str, gist_id: str, filename: str, logger: DebugLogger
-) -> Optional[str]:
+) -> str | None:
     """
     Fetch content from a Gist
 
@@ -42,7 +43,7 @@ def get_gist_content(
         return None
 
 
-def get_svg_content(url: str, logger: DebugLogger) -> Optional[str]:
+def get_svg_content(url: str, logger: DebugLogger) -> str | None:
     """
     Get appropriate SVG content based on URL
 
@@ -119,12 +120,12 @@ def clean_url(url: str) -> str:
 def create_link_card(
     url: str,
     title: str,
-    description: Optional[str] = None,
-    image_path: Optional[str] = None,
-    domain: Optional[str] = None,
+    description: str | None = None,
+    image_path: str | None = None,
+    domain: str | None = None,
     external: bool = False,
-    svg_path: Optional[str] = None,
-    env: Optional[MacroEnv] = None,
+    svg_path: str | None = None,
+    env: MacroEnv | None = None,
 ) -> str:
     """
     Create a link card
@@ -213,29 +214,28 @@ def create_link_card(
             .replace('clip-rule="evenodd"', "")
         )
 
+    # Build image section before the f-string to avoid backslash-in-expression
+    # restriction on Python 3.10 (lifted in 3.12).
+    if svg_html:
+        image_section = f"<div class='custom-link-card-image'>{svg_html}</div>"
+    elif final_image_path:
+        image_section = (
+            f"<img src='{final_image_path}' alt='{title}'"
+            " class='custom-link-card-image'"
+            " onerror=\"this.onerror=null; this.style.display='none';\">"
+        )
+    else:
+        image_section = ""
+
     # Generate HTML
     html = f'''
-<div class="custom-link-card" onclick="window.location='{
-        clean_target_url
-    }'" role="link" tabindex="0">
+<div class="custom-link-card" onclick="window.location='{clean_target_url}'" role="link" tabindex="0">
     <div class="custom-link-card-content">
         <div class="custom-link-card-title" aria-label="{title}">{title}</div>
         <div class="custom-link-card-description">{description}</div>
-        <a href="{clean_target_url}" class="custom-link-card-domain">{
-        display_domain
-    }</a>
+        <a href="{clean_target_url}" class="custom-link-card-domain">{display_domain}</a>
     </div>
-    {
-        "<div class='custom-link-card-image'>" + svg_html + "</div>"
-        if svg_html
-        else "<img src='"
-        + final_image_path
-        + "' alt='"
-        + title
-        + "' class='custom-link-card-image'>"
-        if final_image_path
-        else ""
-    }
+    {image_section}
 </div>
 '''
 
@@ -256,11 +256,11 @@ def define_env(env: MacroEnv) -> None:
     def link_card(
         url: str,
         title: str,
-        description: Optional[str] = None,
-        image_path: Optional[str] = None,
-        domain: Optional[str] = None,
+        description: str | None = None,
+        image_path: str | None = None,
+        domain: str | None = None,
         external: bool = False,
-        svg_path: Optional[str] = None,
+        svg_path: str | None = None,
     ) -> str:
         """
         Zensical macro to create a link card

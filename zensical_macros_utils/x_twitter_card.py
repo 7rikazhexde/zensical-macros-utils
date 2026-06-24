@@ -2,12 +2,16 @@
 Zensical macros module for displaying X/Twitter link cards.
 """
 
-from typing import Optional
-from zensical.extensions.macros import MacroEnv
-import re
+from __future__ import annotations
 
-# Import debug logger
+import re
+from zensical.extensions.macros import MacroEnv
+
+from .common import escape_html
 from .debug_logger import DebugLogger
+
+# Matches a tweet status URL and captures the numeric tweet id.
+_TWEET_URL_RE = re.compile(r"https?://(?:mobile\.)?(?:twitter|x)\.com/\w+/status/(\d+)")
 
 
 def validate_x_twitter_url(url: str, logger: DebugLogger) -> bool:
@@ -21,19 +25,26 @@ def validate_x_twitter_url(url: str, logger: DebugLogger) -> bool:
     Returns:
         bool: True if URL is valid, False otherwise
     """
-    # Check URL patterns
-    valid_patterns = [
-        r"https?://(?:mobile\.)?twitter\.com/\w+/status/\d+",
-        r"https?://(?:mobile\.)?x\.com/\w+/status/\d+",
-    ]
-
-    for pattern in valid_patterns:
-        if re.match(pattern, url):
-            logger.log(f"Valid X/Twitter URL: {url}")
-            return True
+    if _TWEET_URL_RE.match(url):
+        logger.log(f"Valid X/Twitter URL: {url}")
+        return True
 
     logger.log(f"Invalid X/Twitter URL: {url}")
     return False
+
+
+def extract_tweet_id(url: str) -> str | None:
+    """
+    Extract the numeric tweet id from an X/Twitter status URL.
+
+    Args:
+        url (str): X/Twitter tweet URL
+
+    Returns:
+        str | None: Tweet id, or None when the URL does not contain one.
+    """
+    match = _TWEET_URL_RE.match(url)
+    return match.group(1) if match else None
 
 
 def standardize_twitter_url(url: str, logger: DebugLogger) -> str:
@@ -54,16 +65,21 @@ def standardize_twitter_url(url: str, logger: DebugLogger) -> str:
     return standardized_url
 
 
-def create_x_twitter_card(url: str, env: Optional[MacroEnv] = None) -> str:
+def create_x_twitter_card(url: str, env: MacroEnv | None = None) -> str:
     """
-    Generate widget HTML from X tweet URL
+    Generate embed container HTML from an X/Twitter tweet URL.
+
+    The returned markup is intentionally minimal: a container that the
+    ``x-twitter-widget.js`` script turns into a rendered tweet via the
+    official ``twttr.widgets.createTweet`` API, plus a ``<noscript>``
+    fallback link for environments without JavaScript.
 
     Args:
         url (str): X tweet URL
-        env (Optional[MacroEnv], optional): zensical macro environment
+        env (MacroEnv | None, optional): zensical macro environment
 
     Returns:
-        str: Widget HTML
+        str: Embed container HTML
     """
     # Create debug logger
     logger = DebugLogger.create_logger("x_twitter_card", env)
@@ -75,15 +91,14 @@ def create_x_twitter_card(url: str, env: Optional[MacroEnv] = None) -> str:
         logger.log("URL validation failed")
         raise ValueError("Invalid X/Twitter URL")
 
-    # Standardize URL
+    # Standardize URL and extract the tweet id for client-side rendering.
     url = standardize_twitter_url(url, logger)
+    tweet_id = extract_tweet_id(url) or ""
 
-    # Generate widget HTML
+    safe_url = escape_html(url)
     html = f"""
-    <div class="x-twitter-embed" data-url="{url}">
-        <blockquote class="twitter-tweet">
-            <a href="{url}"></a>
-        </blockquote>
+    <div class="x-twitter-embed" data-url="{safe_url}" data-tweet-id="{tweet_id}">
+        <noscript><a href="{safe_url}">{safe_url}</a></noscript>
     </div>
     """
 
@@ -102,12 +117,12 @@ def define_env(env: MacroEnv) -> None:
     @env.macro
     def x_twitter_card(url: str) -> str:
         """
-        Zensical macro to generate widget HTML from X tweet URL
+        Zensical macro to generate embed container HTML from an X tweet URL.
 
         Args:
             url (str): X tweet URL
 
         Returns:
-            str: Widget HTML
+            str: Embed container HTML
         """
         return create_x_twitter_card(url, env)

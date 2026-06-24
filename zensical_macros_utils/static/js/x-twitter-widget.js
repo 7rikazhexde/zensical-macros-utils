@@ -1,22 +1,28 @@
 (function () {
   /**
-   * Configuration for debug mode.
-   * When set to true, debug logs will be enabled in the browser's developer console.
+   * Enable verbose logging in the browser console.
+   * Off by default; set `window.__X_TWITTER_DEBUG__ = true` before this
+   * script loads to opt in.
    * @type {boolean}
    */
-  const DEBUG = true;
+  const DEBUG = Boolean(globalThis.__X_TWITTER_DEBUG__);
 
-  /**
-   * Prefix for logging messages to easily identify widget-related logs.
-   * @type {string}
-   */
+  /** Prefix used for all log messages. @type {string} */
   const LOG_PREFIX = "[X-Twitter-Widget]";
 
+  /** Maximum width (px) Twitter renders an embedded tweet at. @type {number} */
+  const MAX_WIDTH = 550;
+
+  /** Minimum sensible width (px) for an embedded tweet. @type {number} */
+  const MIN_WIDTH = 220;
+
+  /** Official Twitter widgets script URL. @type {string} */
+  const TWITTER_SCRIPT_SRC = "https://platform.twitter.com/widgets.js";
+
   /**
-   * Logs debug messages when DEBUG mode is enabled.
-   *
-   * @param {string} message - The primary log message
-   * @param {...*} args - Additional arguments to log
+   * Log a debug message when DEBUG is enabled.
+   * @param {string} message - Primary message.
+   * @param {...*} args - Additional values to log.
    */
   function log(message, ...args) {
     if (DEBUG) {
@@ -25,161 +31,205 @@
   }
 
   /**
-   * Determines the current color scheme of the document.
+   * Map a Material color-scheme name to a Twitter widget theme.
+   * @param {string} scheme - 'slate' for dark, anything else for light.
+   * @returns {string} 'dark' or 'light'.
+   */
+  function schemeToTheme(scheme) {
+    return scheme === "slate" ? "dark" : "light";
+  }
+
+  /**
+   * Read the persisted palette scheme.
    *
-   * Checks color scheme in the following order:
-   * 1. HTML or body element's data-md-color-scheme attribute
-   * 2. Palette component's selected radio input
-   * 3. Locally stored color scheme
-   * 4. Default to light mode
+   * zensical/Material stores the reader's choice in localStorage under
+   * `__palette` ({ color: { scheme } }); an older key is used as a fallback.
+   * @returns {string|null} The stored scheme name, or null.
+   */
+  function readStoredScheme() {
+    try {
+      const raw = localStorage.getItem("__palette");
+      if (raw) {
+        const data = JSON.parse(raw);
+        if (data && data.color && data.color.scheme) {
+          return data.color.scheme;
+        }
+      }
+    } catch (err) {
+      log("Could not parse stored palette:", err);
+    }
+    return localStorage.getItem("data-md-color-scheme");
+  }
+
+  /**
+   * Whether the OS / browser prefers a dark color scheme.
+   * @returns {boolean}
+   */
+  function prefersDarkScheme() {
+    return (
+      typeof window.matchMedia === "function" &&
+      window.matchMedia("(prefers-color-scheme: dark)").matches
+    );
+  }
+
+  /**
+   * Determine the color scheme the reader is currently seeing.
    *
-   * @returns {string} 'dark' or 'light' color scheme
+   * The server renders the default (light) `data-md-color-scheme` and zensical
+   * swaps it client-side, so the palette's checked radio — which reflects the
+   * active choice once zensical has initialized — is consulted first, then the
+   * html/body attribute, the persisted palette, and finally the OS preference.
+   *
+   * @returns {string} 'dark' or 'light'.
    */
   function getColorScheme() {
-    // Retrieve existing color scheme
-    const html = document.documentElement;
-    const body = document.body;
-    const currentScheme =
-      html.getAttribute("data-md-color-scheme") ||
-      body.getAttribute("data-md-color-scheme");
-
-    if (currentScheme) {
-      log("Current document color scheme:", currentScheme);
-      return currentScheme === "slate" ? "dark" : "light";
-    }
-
-    // Get selected palette
     const palette = document.querySelector('[data-md-component="palette"]');
     if (palette) {
       const checkedInput = palette.querySelector('input[type="radio"]:checked');
       if (checkedInput) {
         const scheme = checkedInput.getAttribute("data-md-color-scheme");
         log("Using palette color scheme:", scheme);
-        return scheme === "slate" ? "dark" : "light";
+        return schemeToTheme(scheme);
       }
     }
 
-    // Check localStorage
-    const storedScheme = localStorage.getItem("data-md-color-scheme");
+    const attrScheme =
+      document.documentElement.getAttribute("data-md-color-scheme") ||
+      document.body.getAttribute("data-md-color-scheme");
+    if (attrScheme) {
+      log("Using document color scheme:", attrScheme);
+      return schemeToTheme(attrScheme);
+    }
+
+    const storedScheme = readStoredScheme();
     if (storedScheme) {
       log("Using stored color scheme:", storedScheme);
-      return storedScheme === "slate" ? "dark" : "light";
+      return schemeToTheme(storedScheme);
     }
 
-    // Default to light mode
-    log("Using default light theme");
-    return "light";
+    log("Falling back to OS color-scheme preference");
+    return prefersDarkScheme() ? "dark" : "light";
   }
 
   /**
-   * Recreates a tweet widget in the specified container.
-   *
-   * Clears existing content, creates a new blockquote with the tweet,
-   * and reloads the Twitter widget with the current color scheme.
-   *
-   * @param {HTMLElement} container - The container element for the tweet
+   * Compute the render width for a tweet, clamped to the container.
+   * @param {HTMLElement} container - The embed container.
+   * @returns {number} Width in pixels.
    */
-  function recreateTweet(container) {
+  function computeWidth(container) {
+    const available = container.clientWidth || MAX_WIDTH;
+    return Math.max(MIN_WIDTH, Math.min(available, MAX_WIDTH));
+  }
+
+  /**
+   * Render (or re-render) a single tweet inside its container using the
+   * official createTweet API, which sizes the embed reliably on both
+   * desktop and mobile.
+   * @param {HTMLElement} container - Element with data-tweet-id.
+   */
+  function renderTweet(container) {
+    const tweetId = container.getAttribute("data-tweet-id");
+    if (!tweetId) {
+      log("Container has no tweet id, skipping");
+      return;
+    }
+
+    if (!(window.twttr && window.twttr.widgets && window.twttr.widgets.createTweet)) {
+      log("twttr.widgets.createTweet is unavailable");
+      return;
+    }
+
     const theme = getColorScheme();
-    const url = container.getAttribute("data-url");
-    log("Recreating tweet:", url, "with theme:", theme);
+    const width = computeWidth(container);
+    log("Rendering tweet", tweetId, "theme:", theme, "width:", width);
 
-    // Clear existing content
     container.innerHTML = "";
-
-    // Create new blockquote
-    const blockquote = document.createElement("blockquote");
-    blockquote.className = "twitter-tweet";
-    blockquote.setAttribute("data-theme", theme);
-
-    const link = document.createElement("a");
-    link.href = url;
-    blockquote.appendChild(link);
-
-    container.appendChild(blockquote);
-
-    // Reload widget
-    if (window.twttr && window.twttr.widgets) {
-      window.twttr.widgets
-        .load(container)
-        .then(() => log("Tweet widget loaded successfully"))
-        .catch((err) => log("Error loading tweet widget:", err));
-    }
+    window.twttr.widgets
+      .createTweet(tweetId, container, {
+        theme: theme,
+        width: width,
+        dnt: true,
+        align: "center",
+      })
+      .then(() => log("Tweet rendered successfully"))
+      .catch((err) => log("Error rendering tweet:", err));
   }
 
   /**
-   * Recreates all Twitter tweet widgets on the page.
-   * Finds all elements with the 'x-twitter-embed' class and reloads them.
+   * Render every tweet embed on the page.
    */
-  function recreateAllTweets() {
-    log("Recreating all tweets");
-    document.querySelectorAll(".x-twitter-embed").forEach((container) => {
-      recreateTweet(container);
-    });
+  function renderAllTweets() {
+    log("Rendering all tweets");
+    document.querySelectorAll(".x-twitter-embed").forEach(renderTweet);
   }
 
   /**
-   * Creates a debounced version of a function to limit the rate of execution.
-   *
-   * @param {Function} func - The function to debounce
-   * @param {number} wait - The wait time in milliseconds
-   * @returns {Function} A debounced version of the input function
+   * Create a debounced version of a function.
+   * @param {Function} func - Function to debounce.
+   * @param {number} wait - Delay in milliseconds.
+   * @returns {Function} Debounced function.
    */
   function debounce(func, wait) {
     let timeout;
     return function executedFunction(...args) {
-      const later = () => {
-        clearTimeout(timeout);
-        func(...args);
-      };
       clearTimeout(timeout);
-      timeout = setTimeout(later, wait);
+      timeout = setTimeout(() => func(...args), wait);
     };
   }
 
   /**
-   * Initializes the Twitter widget.
-   *
-   * Loads the Twitter script if not already loaded,
-   * then recreates all tweets after a short delay.
+   * Invoke a callback once the Twitter widgets API is ready.
+   * @param {Function} callback - Function to run when ready.
    */
-  function initializeWidget() {
-    log("Initializing Twitter widget");
-
-    if (!window.twttr) {
-      log("Loading Twitter script");
-      const script = document.createElement("script");
-      script.src = "https://platform.twitter.com/widgets.js";
-      script.async = true;
-      script.onload = () => {
-        log("Twitter script loaded");
-        setTimeout(recreateAllTweets, 500);
-      };
-      document.head.appendChild(script);
+  function whenReady(callback) {
+    if (window.twttr && typeof window.twttr.ready === "function") {
+      window.twttr.ready(callback);
     } else {
-      setTimeout(recreateAllTweets, 500);
+      callback();
     }
   }
 
   /**
-   * Sets up an observer to detect color scheme changes in zensical.
-   *
-   * Monitors changes to data-md-color-scheme attributes on HTML and body elements,
-   * as well as changes in the palette component.
-   * Uses debounce to prevent excessive re-rendering.
+   * Ensure the Twitter widgets script is loaded, then run the callback.
+   * Uses a preconnect hint to speed up the initial connection.
+   * @param {Function} onReady - Callback to run once widgets are available.
+   */
+  function loadWidgetScript(onReady) {
+    if (window.twttr && window.twttr.widgets) {
+      log("Twitter widgets already available");
+      whenReady(onReady);
+      return;
+    }
+
+    log("Loading Twitter widgets script");
+    const preconnect = document.createElement("link");
+    preconnect.rel = "preconnect";
+    preconnect.href = "https://platform.twitter.com";
+    document.head.appendChild(preconnect);
+
+    const script = document.createElement("script");
+    script.src = TWITTER_SCRIPT_SRC;
+    script.async = true;
+    script.onload = () => {
+      log("Twitter script loaded");
+      whenReady(onReady);
+    };
+    script.onerror = (err) => log("Failed to load Twitter script:", err);
+    document.head.appendChild(script);
+  }
+
+  /**
+   * Observe color-scheme changes and re-render tweets when the theme flips.
    */
   function setupColorSchemeObserver() {
     log("Setting up color scheme observer");
+    const debouncedRender = debounce(renderAllTweets, 100);
 
-    // Debounce recreation of tweets
-    const debouncedRecreate = debounce(recreateAllTweets, 100);
-
-    // Observe HTML element for color scheme changes
     const observer = new MutationObserver((mutations) => {
       mutations.forEach((mutation) => {
         if (mutation.attributeName === "data-md-color-scheme") {
           log("Color scheme mutation detected");
-          debouncedRecreate();
+          debouncedRender();
         }
       });
     });
@@ -188,46 +238,56 @@
       attributes: true,
       attributeFilter: ["data-md-color-scheme"],
     });
-
-    // Observe body element for color scheme changes
     observer.observe(document.body, {
       attributes: true,
       attributeFilter: ["data-md-color-scheme"],
     });
 
-    // Listen for palette changes
     const palette = document.querySelector('[data-md-component="palette"]');
     if (palette) {
       palette.addEventListener("change", () => {
         log("Palette change detected");
-        debouncedRecreate();
+        debouncedRender();
       });
     }
   }
 
   /**
-   * Main initialization function.
+   * Re-render tweets (debounced) when the viewport width changes so the
+   * embed width keeps matching its container on resize / orientation change.
+   */
+  function setupResizeHandler() {
+    log("Setting up resize handler");
+    window.addEventListener("resize", debounce(renderAllTweets, 200));
+  }
+
+  /**
+   * Set up observers and trigger the initial render.
    *
-   * Sets up color scheme observer and initializes the Twitter widget.
-   * Handles cases where the document might still be loading.
+   * The window 'load' listener re-renders after the full page (including
+   * zensical's palette JS) has settled, so the correct theme is picked up
+   * even if the initial render ran before the palette radio was set.
+   */
+  function start() {
+    setupColorSchemeObserver();
+    setupResizeHandler();
+    loadWidgetScript(renderAllTweets);
+    window.addEventListener("load", renderAllTweets);
+  }
+
+  /**
+   * Entry point: wait for the DOM if necessary, then start.
    */
   function initialize() {
     log("Starting initialization");
-
     if (document.readyState === "loading") {
       log("Document still loading, waiting for DOMContentLoaded");
-      document.addEventListener("DOMContentLoaded", () => {
-        setupColorSchemeObserver();
-        setTimeout(initializeWidget, 1000);
-      });
+      document.addEventListener("DOMContentLoaded", start);
       return;
     }
-
-    setupColorSchemeObserver();
-    setTimeout(initializeWidget, 1000);
+    start();
   }
 
-  // Start script execution
   log("Script loaded");
   initialize();
 })();

@@ -31,3 +31,9 @@
 [data-md-color-scheme="slate"] .x-twitter-embed {
    background-color: #15202b;
 }
+
+/* ダークモード: iframeにborder-radiusを適用してツイートカードの
+   角丸の外側に出る白いiframe背景をクリップする */
+[data-md-color-scheme="slate"] .x-twitter-embed iframe {
+   border-radius: 12px !important;
+}

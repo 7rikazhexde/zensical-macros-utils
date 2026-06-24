@@ -42,12 +42,22 @@
   /**
    * Read the persisted palette scheme.
    *
-   * zensical/Material stores the reader's choice in localStorage under
-   * `__palette` ({ color: { scheme } }); an older key is used as a fallback.
+   * Material/zensical stores the palette at a path-scoped localStorage key
+   * and exposes `__md_get` as a global helper to read it.  If available, that
+   * is used; otherwise we fall back to the raw (unscoped) `__palette` key for
+   * non-Material deployments, then the legacy `data-md-color-scheme` key.
    * @returns {string|null} The stored scheme name, or null.
    */
   function readStoredScheme() {
     try {
+      // __md_get reads from the scoped key ({pathname}.__palette), which is
+      // what the bundle and the inline palette script actually write to.
+      if (typeof __md_get === "function") {
+        const data = __md_get("__palette");
+        if (data && data.color && data.color.scheme) {
+          return data.color.scheme;
+        }
+      }
       const raw = localStorage.getItem("__palette");
       if (raw) {
         const data = JSON.parse(raw);
@@ -75,10 +85,13 @@
   /**
    * Determine the color scheme the reader is currently seeing.
    *
-   * The server renders the default (light) `data-md-color-scheme` and zensical
-   * swaps it client-side, so the palette's checked radio — which reflects the
-   * active choice once zensical has initialized — is consulted first, then the
-   * html/body attribute, the persisted palette, and finally the OS preference.
+   * Priority order:
+   * 1. Palette radio – set by the bundle after initialization; most accurate.
+   * 2. Persisted palette – reads the scoped localStorage key via `__md_get`.
+   * 3. HTML/body attribute – but "default" is the server-rendered placeholder
+   *    before the client JS runs, so it is skipped; only explicit non-default
+   *    values (e.g. "slate" set by an inline script) are trusted here.
+   * 4. OS preference via matchMedia.
    *
    * @returns {string} 'dark' or 'light'.
    */
@@ -93,18 +106,23 @@
       }
     }
 
-    const attrScheme =
-      document.documentElement.getAttribute("data-md-color-scheme") ||
-      document.body.getAttribute("data-md-color-scheme");
-    if (attrScheme) {
-      log("Using document color scheme:", attrScheme);
-      return schemeToTheme(attrScheme);
-    }
-
+    // Check persisted palette before the body attribute: the body is
+    // server-rendered as "default" and Material only updates it when a palette
+    // is explicitly stored, so the stored value is more reliable.
     const storedScheme = readStoredScheme();
     if (storedScheme) {
       log("Using stored color scheme:", storedScheme);
       return schemeToTheme(storedScheme);
+    }
+
+    // "default" is the server-rendered placeholder — skip it and fall through
+    // to the OS preference so users relying on prefers-color-scheme get dark.
+    const attrScheme =
+      document.documentElement.getAttribute("data-md-color-scheme") ||
+      document.body.getAttribute("data-md-color-scheme");
+    if (attrScheme && attrScheme !== "default") {
+      log("Using document color scheme:", attrScheme);
+      return schemeToTheme(attrScheme);
     }
 
     log("Falling back to OS color-scheme preference");

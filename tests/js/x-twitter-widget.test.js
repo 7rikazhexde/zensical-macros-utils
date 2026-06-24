@@ -225,6 +225,30 @@ describe("X/Twitter widget", () => {
     delete window.matchMedia;
   });
 
+  test("reads color scheme via __md_get when available", () => {
+    globalThis.__md_get = jest.fn().mockReturnValue({ color: { scheme: "slate" } });
+    loadModule();
+    expect(lastCreateTweetCall()[2].theme).toBe("dark");
+    delete globalThis.__md_get;
+  });
+
+  test("falls through __md_get to OS preference when palette not in storage", () => {
+    globalThis.__md_get = jest.fn().mockReturnValue(null);
+    window.localStorage.getItem.mockReturnValue(null);
+    loadModule();
+    expect(lastCreateTweetCall()[2].theme).toBe("light");
+    delete globalThis.__md_get;
+  });
+
+  test("skips server-rendered default body attribute and uses OS dark preference", () => {
+    document.body.setAttribute("data-md-color-scheme", "default");
+    window.localStorage.getItem.mockReturnValue(null);
+    window.matchMedia = jest.fn().mockReturnValue({ matches: true });
+    loadModule();
+    expect(lastCreateTweetCall()[2].theme).toBe("dark");
+    delete window.matchMedia;
+  });
+
   // -- Width ----------------------------------------------------------------
 
   test("uses container width when available", () => {

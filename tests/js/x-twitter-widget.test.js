@@ -401,23 +401,12 @@ describe("X/Twitter widget", () => {
     ).toBeGreaterThan(callsBefore);
   });
 
-  test("re-renders on window resize", () => {
-    loadModule();
-    const callsBefore = global.twttr.widgets.createTweet.mock.calls.length;
-
-    window.dispatchEvent(new Event("resize"));
-    jest.advanceTimersByTime(200);
-
-    expect(
-      global.twttr.widgets.createTweet.mock.calls.length
-    ).toBeGreaterThan(callsBefore);
-  });
-
   test("re-renders on window load to pick up the settled palette theme", () => {
     loadModule();
     const callsBefore = global.twttr.widgets.createTweet.mock.calls.length;
 
     window.dispatchEvent(new Event("load"));
+    jest.advanceTimersByTime(100);
 
     expect(
       global.twttr.widgets.createTweet.mock.calls.length

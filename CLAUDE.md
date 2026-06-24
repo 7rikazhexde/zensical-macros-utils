@@ -21,7 +21,7 @@ npm install             # Install JavaScript test dependencies
 
 ```sh
 # Run all tests with coverage
-uv run task testcoverageverbose
+just test-coverage-verbose
 
 # Run a single test file
 uv run pytest tests/python/zensical_macros_utils/test_link_card.py -s -vv
@@ -30,8 +30,8 @@ uv run pytest tests/python/zensical_macros_utils/test_link_card.py -s -vv
 uv run pytest -m link_card -s -vv
 
 # CI variants
-uv run task testcixml    # XML report (for CI)
-uv run task testciterm   # Terminal report (for CI)
+just test-ci-xml    # XML report (for CI)
+just test-ci-term   # Terminal report (for CI)
 ```
 
 Coverage requirement: **90% minimum** enforced on PRs.

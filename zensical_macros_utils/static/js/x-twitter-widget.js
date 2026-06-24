@@ -271,15 +271,6 @@
   }
 
   /**
-   * Re-render tweets (debounced) when the viewport width changes so the
-   * embed width keeps matching its container on resize / orientation change.
-   */
-  function setupResizeHandler() {
-    log("Setting up resize handler");
-    window.addEventListener("resize", debounce(renderAllTweets, 200));
-  }
-
-  /**
    * Set up observers and trigger the initial render.
    *
    * The window 'load' listener re-renders after the full page (including
@@ -288,8 +279,8 @@
    */
   function start() {
     setupColorSchemeObserver();
-    setupResizeHandler();
     loadWidgetScript(renderAllTweets);
+    window.addEventListener("load", debounce(renderAllTweets, 100));
   }
 
   /**

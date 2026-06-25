@@ -17,7 +17,10 @@ from pathlib import Path
 _ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(_ROOT))
 
-from zensical_macros_utils.common import load_config, load_extra_config
+from zensical_macros_utils.common import (  # noqa: E402  # sys.path 調整後にインポートする必要がある
+    load_config,
+    load_extra_config,
+)
 
 CONFIG_CANDIDATES = ["zensical.toml", "mkdocs.yml", "mkdocs.yaml"]
 

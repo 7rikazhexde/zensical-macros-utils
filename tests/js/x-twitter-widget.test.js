@@ -357,6 +357,22 @@ describe("X/Twitter widget", () => {
     appendSpy.mockRestore();
   });
 
+  test("does not inject a second script when one is already present", () => {
+    delete global.twttr;
+    const existing = document.createElement("script");
+    existing.src = "https://platform.twitter.com/widgets.js";
+    document.head.appendChild(existing);
+
+    const appendSpy = jest.spyOn(document.head, "appendChild");
+    loadModule();
+
+    const injectedScripts = appendSpy.mock.calls
+      .map((c) => c[0])
+      .filter((el) => el.tagName === "SCRIPT");
+    expect(injectedScripts).toHaveLength(0);
+    appendSpy.mockRestore();
+  });
+
   test("renders after the script finishes loading", () => {
     delete global.twttr;
     const appendSpy = jest.spyOn(document.head, "appendChild");
@@ -369,7 +385,6 @@ describe("X/Twitter widget", () => {
     const createTweet = createTweetMock();
     global.twttr = { widgets: { createTweet }, ready: (cb) => cb() };
     script.onload();
-    window.dispatchEvent(new Event("load"));
 
     expect(createTweet).toHaveBeenCalledWith(
       TWEET_ID,
@@ -413,7 +428,6 @@ describe("X/Twitter widget", () => {
     const ready = jest.fn((cb) => cb());
     global.twttr = { widgets: { createTweet }, ready };
     script.onload();
-    window.dispatchEvent(new Event("load"));
 
     expect(ready).toHaveBeenCalled();
     expect(createTweet).toHaveBeenCalled();
@@ -422,7 +436,7 @@ describe("X/Twitter widget", () => {
 
   // -- Observers & handlers -------------------------------------------------
 
-  test("re-renders on palette change events", () => {
+  test("re-renders on palette change events", async () => {
     document.body.innerHTML = `
       <div class="x-twitter-embed" data-url="${TWEET_URL}" data-tweet-id="${TWEET_ID}"></div>
       <form data-md-component="palette">
@@ -431,10 +445,29 @@ describe("X/Twitter widget", () => {
     `;
     loadModule();
     window.dispatchEvent(new Event("load"));
+    // Let the initial render settle so the in-flight guard clears before the
+    // palette change requests a re-render.
+    await flush();
     const callsBefore = global.twttr.widgets.createTweet.mock.calls.length;
 
     const palette = document.querySelector('[data-md-component="palette"]');
     palette.dispatchEvent(new Event("change"));
+    jest.advanceTimersByTime(100);
+
+    expect(
+      global.twttr.widgets.createTweet.mock.calls.length
+    ).toBeGreaterThan(callsBefore);
+  });
+
+  test("re-renders when the color-scheme attribute mutates", async () => {
+    loadModule();
+    window.dispatchEvent(new Event("load"));
+    await flush();
+    const callsBefore = global.twttr.widgets.createTweet.mock.calls.length;
+
+    // Mutating the observed attribute should drive the MutationObserver.
+    document.documentElement.setAttribute("data-md-color-scheme", "slate");
+    await flush();
     jest.advanceTimersByTime(100);
 
     expect(
@@ -449,6 +482,43 @@ describe("X/Twitter widget", () => {
     window.dispatchEvent(new Event("load"));
 
     expect(global.twttr.widgets.createTweet).toHaveBeenCalledTimes(1);
+  });
+
+  test("queues a re-render requested while one is in flight (no duplicates)", async () => {
+    // First render returns a promise we control so it stays "in flight" while
+    // a second render is requested; the second must be queued, not run
+    // immediately, otherwise two iframes would be appended (the reload bug).
+    let resolveFirst;
+    const createTweet = jest
+      .fn()
+      .mockImplementationOnce(
+        () => new Promise((resolve) => (resolveFirst = resolve))
+      )
+      .mockResolvedValue({});
+    global.twttr = { widgets: { createTweet }, ready: (cb) => cb() };
+
+    document.body.innerHTML = `
+      <div class="x-twitter-embed" data-url="${TWEET_URL}" data-tweet-id="${TWEET_ID}"></div>
+      <form data-md-component="palette">
+        <input type="radio" data-md-color-scheme="default" checked>
+      </form>
+    `;
+
+    loadModule();
+    window.dispatchEvent(new Event("load"));
+    expect(createTweet).toHaveBeenCalledTimes(1);
+
+    // Request a second render while the first is still pending.
+    const palette = document.querySelector('[data-md-component="palette"]');
+    palette.dispatchEvent(new Event("change"));
+    jest.advanceTimersByTime(100);
+    // Still only one call — the second render was queued, not executed.
+    expect(createTweet).toHaveBeenCalledTimes(1);
+
+    // Resolving the first render flushes the queued one exactly once.
+    resolveFirst({});
+    await flush();
+    expect(createTweet).toHaveBeenCalledTimes(2);
   });
 
   // -- Initialization -------------------------------------------------------

@@ -1,25 +1,53 @@
 version: 2
+
+# Merge-safety gate (a green test run is necessary but NOT sufficient):
+# - `cooldown` (below) delays every bump until the release has been public for a
+#   few days, so a freshly-published / compromised version is not pulled instantly.
+# - `dependency-review.yml` fails any PR that introduces a vulnerable dependency.
+# - `dependabot-metadata.yml` labels each PR by semver bump so the risk is obvious.
+# - Merging stays MANUAL (auto-merge is disabled); `dependabot-auto-rebase.yml`
+#   only rebases open PRs so they stay mergeable, it never merges them.
+#
+# The ":arrow_up:" commit-message prefix makes each bump a gitmoji commit so
+# semantic-release-gitmoji recognises it: without a gitmoji the commit is dropped
+# from the generated release notes (it has no group). ":arrow_up:" is a patch
+# rule in .releaserc.cjs, so bumps land under the release notes' Dependencies
+# section and a bump-only batch yields a patch release.
 updates:
-  # Python dependencies
+  # Python dependencies (shipped package)
   - package-ecosystem: "pip"
     directory: "/"
     schedule:
       interval: "daily"
+    cooldown:
+      default-days: 5
+      semver-major-days: 14
+      semver-minor-days: 7
+      semver-patch-days: 3
     groups:
       dependencies:
         patterns:
           - "*"
+    commit-message:
+      prefix: ":arrow_up:"
     open-pull-requests-limit: 10
 
-  # Node.js dependencies
+  # Node.js dependencies (Jest test toolchain)
   - package-ecosystem: "npm"
     directory: "/"
     schedule:
       interval: "daily"
+    cooldown:
+      default-days: 5
+      semver-major-days: 14
+      semver-minor-days: 7
+      semver-patch-days: 3
     groups:
       dependencies:
         patterns:
           - "*"
+    commit-message:
+      prefix: ":arrow_up:"
     open-pull-requests-limit: 10
 
   # GitHub Actions
@@ -27,8 +55,14 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
+    # NOTE: the github-actions ecosystem does NOT support the semver-*-days
+    # granularity (Dependabot rejects them here), so only default-days applies.
+    cooldown:
+      default-days: 5
     groups:
       dependencies:
         patterns:
           - "*"
+    commit-message:
+      prefix: ":arrow_up:"
     open-pull-requests-limit: 10

@@ -157,6 +157,20 @@
       return;
     }
 
+    // Guard against concurrent renders of the same container. createTweet is
+    // async — it only appends its iframe after the returned promise resolves —
+    // so two overlapping calls (e.g. the Twitter script's onload and the
+    // window 'load' event firing close together on reload) would each append
+    // an iframe and produce duplicate cards. While a render is in flight we
+    // record that another was requested and run it once afterwards, so a theme
+    // change that arrives mid-render still takes effect.
+    if (container.__xTwitterRendering) {
+      log("Render already in progress, queuing re-render");
+      container.__xTwitterPending = true;
+      return;
+    }
+    container.__xTwitterRendering = true;
+
     const theme = getColorScheme();
     const width = computeWidth(container);
     log("Rendering tweet", tweetId, "theme:", theme, "width:", width);
@@ -170,7 +184,14 @@
         align: "center",
       })
       .then(() => log("Tweet rendered successfully"))
-      .catch((err) => log("Error rendering tweet:", err));
+      .catch((err) => log("Error rendering tweet:", err))
+      .then(() => {
+        container.__xTwitterRendering = false;
+        if (container.__xTwitterPending) {
+          container.__xTwitterPending = false;
+          renderTweet(container);
+        }
+      });
   }
 
   /**
@@ -239,15 +260,21 @@
    */
   function setupColorSchemeObserver() {
     log("Setting up color scheme observer");
+
+    // Disconnect any observer from a previous initialization so repeated
+    // setup (a duplicate script include, or re-init in tests) does not stack
+    // observers that all re-render on every theme change.
+    if (window.__xTwitterSchemeObserver) {
+      window.__xTwitterSchemeObserver.disconnect();
+    }
+
     const debouncedRender = debounce(renderAllTweets, 100);
 
-    const observer = new MutationObserver((mutations) => {
-      mutations.forEach((mutation) => {
-        if (mutation.attributeName === "data-md-color-scheme") {
-          log("Color scheme mutation detected");
-          debouncedRender();
-        }
-      });
+    // attributeFilter below restricts deliveries to data-md-color-scheme, so
+    // every mutation we receive is a theme change worth re-rendering for.
+    const observer = new MutationObserver(() => {
+      log("Color scheme mutation detected");
+      debouncedRender();
     });
 
     observer.observe(document.documentElement, {
@@ -258,6 +285,7 @@
       attributes: true,
       attributeFilter: ["data-md-color-scheme"],
     });
+    window.__xTwitterSchemeObserver = observer;
 
     const palette = document.querySelector('[data-md-component="palette"]');
     if (palette) {
@@ -279,17 +307,23 @@
     if (!(window.twttr && window.twttr.widgets)) {
       loadWidgetScript();
     }
-    window.addEventListener("load", () => whenReady(renderAllTweets));
+    // Bind the load handler idempotently: replace any handler from a previous
+    // initialization so window 'load' triggers a single render, not one per
+    // (accidental) script include.
+    if (window.__xTwitterLoadHandler) {
+      window.removeEventListener("load", window.__xTwitterLoadHandler);
+    }
+    window.__xTwitterLoadHandler = () => whenReady(renderAllTweets);
+    window.addEventListener("load", window.__xTwitterLoadHandler);
   }
 
   /**
    * Entry point: wait for the DOM if necessary, then start.
+   *
+   * Safe to run more than once (e.g. a duplicate script include): start()
+   * rebinds its load handler and observer idempotently rather than stacking.
    */
-  let initialized = false;
   function initialize() {
-    if (initialized) return;
-    initialized = true;
-
     log("Starting initialization");
     if (document.readyState === "loading") {
       log("Document still loading, waiting for DOMContentLoaded");

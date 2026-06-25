@@ -1,31 +1,32 @@
-"""PyPI 公開スクリプト
+"""PyPI 公開スクリプト (uv + keyring)
 
-`uv build` でパッケージをビルドし、`uv publish` で PyPI に公開する。
-認証トークンは環境変数 ``UV_PUBLISH_TOKEN`` から読み込む。トークンはローカルで
-設定する前提で、リポジトリや CI には保存しない。
+`uv build` でビルドし、`uv publish` で PyPI に公開する。認証トークンは OS の
+キーリング（Windows 資格情報マネージャー / macOS Keychain / Secret Service 等）に
+保存し、環境変数やリポジトリ・CI には置かない。
 
-semantic-release（.github/workflows/semantic-release.yml）はバージョン更新・
-CHANGELOG・タグ・GitHub Release までを担当する。PyPI への公開だけは、トークンを
-CI に置かないためにこのスクリプトでローカルから手動実行する。
+事前設定（1 回だけ）:
+    # keyring CLI を導入（uv のツールとして PATH に入る）
+    uv tool install keyring
+
+    # PyPI トークンを保存（プロンプトにトークンを貼り付け。画面にも履歴にも残らない）
+    keyring set https://upload.pypi.org/legacy/ __token__
+
+    # TestPyPI も使う場合
+    keyring set https://test.pypi.org/legacy/ __token__
 
 使用方法:
-    # PowerShell
-    $env:UV_PUBLISH_TOKEN = "pypi-****"
-    uv run python scripts/publish_to_pypi.py
-
-    # bash
-    export UV_PUBLISH_TOKEN="pypi-****"
-    uv run python scripts/publish_to_pypi.py
+    uv run python scripts/publish_to_pypi.py            # ビルドして PyPI に公開
+    uv run python scripts/publish_to_pypi.py --dry-run  # ビルドのみ
+    uv run python scripts/publish_to_pypi.py --test     # TestPyPI に公開
 
 オプション:
-    --dry-run     ビルドのみ行い公開しない（トークン不要）
+    --dry-run     ビルドのみ行い公開しない（keyring 不要）
     --test        TestPyPI (https://test.pypi.org/legacy/) に公開する
-                  （UV_PUBLISH_TOKEN には TestPyPI のトークンを設定すること）
     --skip-build  dist/ を再ビルドせず、既存の成果物をそのまま公開する
+    --username    keyring 参照に使うユーザー名（既定: __token__）
 """
 
 import argparse
-import os
 import shutil
 import subprocess
 import sys
@@ -33,7 +34,7 @@ from pathlib import Path
 
 _ROOT = Path(__file__).parent.parent
 _DIST_DIR = _ROOT / "dist"
-_TOKEN_ENV = "UV_PUBLISH_TOKEN"
+_PYPI_URL = "https://upload.pypi.org/legacy/"
 _TESTPYPI_URL = "https://test.pypi.org/legacy/"
 
 
@@ -59,34 +60,45 @@ def build() -> None:
     run(["uv", "build"])
 
 
-def publish(test: bool) -> None:
-    """uv publish で dist/ の成果物を公開する。"""
-    command = ["uv", "publish"]
-    if test:
-        command += ["--publish-url", _TESTPYPI_URL]
-    run(command)
+def publish(test: bool, username: str) -> None:
+    """uv publish + keyring で dist/ の成果物を公開する。
+
+    --publish-url は keyring に登録したサービス名（URL）と一致させる必要がある。
+    """
+    url = _TESTPYPI_URL if test else _PYPI_URL
+    run(
+        [
+            "uv",
+            "publish",
+            "--publish-url",
+            url,
+            "--keyring-provider",
+            "subprocess",
+            "--username",
+            username,
+        ]
+    )
 
 
-def require_token() -> None:
-    """公開先トークンが環境変数に設定されているか確認する。"""
-    if not os.environ.get(_TOKEN_ENV):
+def require_keyring() -> None:
+    """keyring CLI が PATH 上に存在するか確認する。"""
+    if shutil.which("keyring") is None:
         print(
-            f"[FAIL] environment variable {_TOKEN_ENV} is not set.\n"
-            "       Set it locally before publishing, e.g.:\n"
-            '         PowerShell : $env:UV_PUBLISH_TOKEN = "pypi-****"\n'
-            '         bash       : export UV_PUBLISH_TOKEN="pypi-****"'
+            "[FAIL] 'keyring' CLI not found on PATH.\n"
+            "       Install it once:  uv tool install keyring\n"
+            "       Store your token: keyring set https://upload.pypi.org/legacy/ __token__"
         )
         sys.exit(1)
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Build and publish zensical-macros-utils to PyPI via uv."
+        description="Build and publish zensical-macros-utils to PyPI via uv + keyring."
     )
     parser.add_argument(
         "--dry-run",
         action="store_true",
-        help="Build only; do not publish (no token required).",
+        help="Build only; do not publish (keyring not required).",
     )
     parser.add_argument(
         "--test",
@@ -98,10 +110,15 @@ def main() -> None:
         action="store_true",
         help="Publish the existing dist/ without rebuilding.",
     )
+    parser.add_argument(
+        "--username",
+        default="__token__",
+        help="Username used for the keyring lookup (default: __token__).",
+    )
     args = parser.parse_args()
 
     if not args.dry_run:
-        require_token()
+        require_keyring()
 
     if args.skip_build:
         if not _DIST_DIR.exists() or not any(_DIST_DIR.iterdir()):
@@ -117,8 +134,8 @@ def main() -> None:
         return
 
     target = "TestPyPI" if args.test else "PyPI"
-    print(f"[INFO] publishing to {target}")
-    publish(args.test)
+    print(f"[INFO] publishing to {target} (credentials from keyring)")
+    publish(args.test, args.username)
     print(f"[OK]   published to {target}")
 
 

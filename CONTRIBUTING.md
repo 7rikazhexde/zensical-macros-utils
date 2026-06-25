@@ -60,16 +60,25 @@ Releasing is two steps; the PyPI token is never stored in CI.
    `pyproject.toml` / `package.json`, refreshes `uv.lock`, updates
    `CHANGELOG.md`, commits to `main`, and creates the `vX.Y.Z` tag + Release.
 
-2. **Publish to PyPI** — locally, with your token in the environment:
+2. **Publish to PyPI** — locally. The token is stored in your OS keyring (e.g.
+   Windows Credential Manager), never in an environment variable, the repo, or CI.
+
+   One-time setup:
 
    ```sh
-   # PowerShell
-   $env:UV_PUBLISH_TOKEN = "pypi-****"
-   uv run python scripts/publish_to_pypi.py
+   uv tool install keyring
+   # Paste your PyPI token at the prompt (username is __token__); it is not echoed or saved to shell history.
+   keyring set https://upload.pypi.org/legacy/ __token__
+   # Also register TestPyPI if you use it:
+   keyring set https://test.pypi.org/legacy/ __token__
+   ```
 
-   # Preview the build first, or publish to TestPyPI:
-   uv run python scripts/publish_to_pypi.py --dry-run
-   uv run python scripts/publish_to_pypi.py --test
+   Then build & publish:
+
+   ```sh
+   uv run python scripts/publish_to_pypi.py            # build + publish to PyPI
+   uv run python scripts/publish_to_pypi.py --dry-run  # build only
+   uv run python scripts/publish_to_pypi.py --test     # publish to TestPyPI
    ```
 
 ## Dependency updates & security

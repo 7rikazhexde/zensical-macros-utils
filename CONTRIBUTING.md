@@ -27,7 +27,7 @@ Commits follow [gitmoji](https://gitmoji.dev/) conventions (same as
 [json2vars-setter](https://github.com/7rikazhexde/json2vars-setter)). Use the
 `:shortcode:` form at the start of the subject so the release tooling can read it:
 
-```
+```text
 :sparkles: feat(link-card): add SVG fallback for missing icons
 :bug: fix(js): prevent duplicate Twitter card render on reload
 :memo: docs: document mkdocs.yml configuration
@@ -39,8 +39,8 @@ Releases are automated with **semantic-release** (`.releaserc.cjs`,
 `.github/workflows/semantic-release.yml`). The gitmoji in commits since the last
 tag decide the next version:
 
-| Bump  | gitmoji |
-| ----- | ------- |
+| Bump | gitmoji |
+| --- | --- |
 | Major | `:boom:` |
 | Minor | `:sparkles:` |
 | Patch | `:bug:` `:ambulance:` `:lock:` `:zap:` `:rocket:` `:wrench:` `:recycle:` `:fire:` `:arrow_up:` `:arrow_down:` `:pushpin:` `:pencil2:` `:globe_with_meridians:` `:alien:` `:card_file_box:` |

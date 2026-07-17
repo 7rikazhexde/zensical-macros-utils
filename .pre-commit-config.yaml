@@ -25,20 +25,20 @@ repos:
 
   # https://github.com/astral-sh/uv-pre-commit
   - repo: https://github.com/astral-sh/uv-pre-commit
-    rev: 0.11.28
+    rev: 0.11.29
     hooks:
       - id: uv-lock
         verbose: true
 
   - repo: https://github.com/charliermarsh/ruff-pre-commit
-    rev: v0.15.21
+    rev: v0.15.22
     hooks:
       - id: ruff
         args: ["--fix"]
       - id: ruff-format
 
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v2.2.0
+    rev: v2.3.0
     hooks:
       - id: mypy
         additional_dependencies: [types-requests==2.32.0.20240622]

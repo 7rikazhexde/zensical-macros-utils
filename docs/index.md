@@ -7,6 +7,9 @@ description:
 
 # zensical-macros-utils
 
+<img alt="zensical-macros-utils" src="assets/img/banner-light.png" class="banner-light">
+<img alt="zensical-macros-utils" src="assets/img/banner-dark.png" class="banner-dark">
+
 [zensical-macros-utils](https://pypi.org/project/zensical-macros-utils/) is a [zensical](https://zensical.org/)-based project that provides macros to extend cards, code blocks, etc, in Zensical documents.
 
 ## Features

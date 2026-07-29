@@ -1,3 +1,21 @@
+# [v0.1.3](https://github.com/7rikazhexde/zensical-macros-utils/compare/v0.1.2...v0.1.3) (2026-07-29)
+
+## ⬆️ Dependencies
+- [`18a504c`](https://github.com/7rikazhexde/zensical-macros-utils/commit/18a504c)  Update pre-commit hooks [skip ci] 
+- [`13eee06`](https://github.com/7rikazhexde/zensical-macros-utils/commit/13eee06)  Bump actions/setup-python in the dependencies group 
+- [`48a9d03`](https://github.com/7rikazhexde/zensical-macros-utils/commit/48a9d03)  Bump MishaKav/pytest-coverage-comment 
+- [`59645e7`](https://github.com/7rikazhexde/zensical-macros-utils/commit/59645e7)  Update pre-commit hooks [skip ci] 
+- [`f388e2e`](https://github.com/7rikazhexde/zensical-macros-utils/commit/f388e2e)  Bump the dependencies group across 1 directory with 2 updates 
+- [`1feb176`](https://github.com/7rikazhexde/zensical-macros-utils/commit/1feb176)  Update pre-commit hooks [skip ci] 
+- [`881029b`](https://github.com/7rikazhexde/zensical-macros-utils/commit/881029b)  Bump astral-sh/setup-uv in the dependencies group 
+- [`5200b38`](https://github.com/7rikazhexde/zensical-macros-utils/commit/5200b38)  Update pre-commit hooks [skip ci] 
+- [`2172792`](https://github.com/7rikazhexde/zensical-macros-utils/commit/2172792)  Bump actions/setup-node 
+- [`914a5f5`](https://github.com/7rikazhexde/zensical-macros-utils/commit/914a5f5)  Bump actions/checkout in the dependencies group 
+- [`457c479`](https://github.com/7rikazhexde/zensical-macros-utils/commit/457c479)  Bump actions/setup-python in the dependencies group 
+- [`06a6449`](https://github.com/7rikazhexde/zensical-macros-utils/commit/06a6449)  Update pre-commit hooks [skip ci] 
+- [`d18b6dd`](https://github.com/7rikazhexde/zensical-macros-utils/commit/d18b6dd)  Bump astral-sh/setup-uv in the dependencies group 
+- [`1e6f984`](https://github.com/7rikazhexde/zensical-macros-utils/commit/1e6f984)  Update ruff requirement in the dependencies group
+
 # [v0.1.2](https://github.com/7rikazhexde/zensical-macros-utils/compare/v0.1.1...v0.1.2) (2026-06-25)
 
 ## 🔒 Security

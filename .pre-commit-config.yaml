@@ -25,13 +25,13 @@ repos:
 
   # https://github.com/astral-sh/uv-pre-commit
   - repo: https://github.com/astral-sh/uv-pre-commit
-    rev: 0.12.7
+    rev: 0.12.9
     hooks:
       - id: uv-lock
         verbose: true
 
   - repo: https://github.com/charliermarsh/ruff-pre-commit
-    rev: v0.16.5
+    rev: v0.16.6
     hooks:
       - id: ruff
         args: ["--fix"]

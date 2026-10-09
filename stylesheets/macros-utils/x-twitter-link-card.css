@@ -1,0 +1,39 @@
+/* ツイート埋め込みのコンテナ */
+.x-twitter-embed {
+   /* 上下に余白、左右autoで中央寄せ */
+   margin: 1rem auto;
+   /* 最大幅をTwitterの埋め込み幅に合わせる */
+   max-width: 550px;
+   /* 親要素が狭い場合ははみ出さないようにする */
+   width: 100%;
+   /* iframe（インライン要素）を中央寄せ */
+   text-align: center;
+}
+
+/* createTweet が生成する iframe / ツイート本体
+   幅はTwitter側が data-width で決めるため強制せず、
+   はみ出し防止のため最大幅のみ制限する */
+.x-twitter-embed iframe,
+.x-twitter-embed .twitter-tweet,
+.x-twitter-embed .twitter-tweet-rendered {
+   max-width: 100% !important;
+   /* 中央寄せ */
+   margin-left: auto !important;
+   margin-right: auto !important;
+}
+
+/* JavaScript無効時のフォールバックリンク */
+.x-twitter-embed noscript a {
+   word-break: break-all;
+}
+
+/* ダークモード: Twitter dark-themeのiframe背景と揃える (#15202b) */
+[data-md-color-scheme="slate"] .x-twitter-embed {
+   background-color: #15202b;
+}
+
+/* ダークモード: iframeにborder-radiusを適用してツイートカードの
+   角丸の外側に出る白いiframe背景をクリップする */
+[data-md-color-scheme="slate"] .x-twitter-embed iframe {
+   border-radius: 12px !important;
+}

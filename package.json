@@ -29,5 +29,9 @@
     "babel-jest": "^30.5.2",
     "jest": "^30.5.2",
     "jest-environment-jsdom": "^30.5.2"
+  },
+  "overrides": {
+    "glob": "^14.0.2",
+    "minimatch": "^11.0.1"
   }
 }

@@ -123,4 +123,4 @@ Tests mirror the source layout under `tests/python/zensical_macros_utils/`. Shar
 
 Custom pytest markers: `gist`, `link_card`, `debug`.
 
-CI matrix: Ubuntu/Windows/macOS × Python 3.10–3.13, timezone Asia/Tokyo.
+CI matrix: Ubuntu/Windows/macOS × Python 3.11–3.13, timezone Asia/Tokyo.

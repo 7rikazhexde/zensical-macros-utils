@@ -214,8 +214,8 @@ def create_link_card(
             .replace('clip-rule="evenodd"', "")
         )
 
-    # Build image section before the f-string to avoid backslash-in-expression
-    # restriction on Python 3.10 (lifted in 3.12).
+    # Build image section before the f-string to avoid the backslash-in-expression
+    # restriction on Python < 3.12.
     if svg_html:
         image_section = f"<div class='custom-link-card-image'>{svg_html}</div>"
     elif final_image_path:

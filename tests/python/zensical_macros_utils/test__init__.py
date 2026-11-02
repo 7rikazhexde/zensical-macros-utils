@@ -5,7 +5,6 @@ including static file copying and environment setup.
 """
 
 import os
-import sys
 import logging
 from pathlib import Path
 import pytest
@@ -209,15 +208,6 @@ def test_load_config_invalid_toml_fallback(
     monkeypatch.chdir(tmp_path)
     config = _load_config()
     assert config.get("site_name") == "Fallback"
-
-
-def test_load_config_tomli_fallback(monkeypatch: MonkeyPatch, tmp_path: Path) -> None:
-    """Test _load_config uses tomli when tomllib stdlib is not available."""
-    (tmp_path / "zensical.toml").write_bytes(b'[project]\nsite_name = "TomliTest"\n')
-    monkeypatch.chdir(tmp_path)
-    monkeypatch.setitem(sys.modules, "tomllib", None)
-    config = _load_config()
-    assert config.get("site_name") == "TomliTest"
 
 
 # -- _load_extra_config Tests ------------------------------

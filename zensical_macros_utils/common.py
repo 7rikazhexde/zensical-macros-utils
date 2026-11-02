@@ -93,10 +93,8 @@ def load_config() -> dict[str, object]:
     toml_path = cwd / "zensical.toml"
     if toml_path.exists():
         try:
-            try:
-                import tomllib
-            except ImportError:
-                import tomli as tomllib  # type: ignore[no-redef]
+            import tomllib
+
             with open(toml_path, "rb") as f:
                 data = tomllib.load(f)
             project = data.get("project", data)
